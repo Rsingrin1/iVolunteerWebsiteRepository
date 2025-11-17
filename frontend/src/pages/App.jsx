@@ -2,7 +2,8 @@ import { useState } from 'react'
 import reactLogo from '../assets/react.svg'
 import viteLogo from '/vite.svg'
 import '../assets/App.css'
-//import { ChakraProvider } from '@chakra-ui/react'
+import { Link } from "react-router-dom";
+
 
 function App() {
   const [count, setCount] = useState(0)
@@ -27,7 +28,7 @@ function App() {
         </p>
       </div>
       <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
+        <Link to="/About">Go to About Page</Link>
       </p>
     </>
   )
