@@ -2,7 +2,7 @@
 
 
 #project members
-#Rhys William Singrin
+#Rhys William Singrin: rsingrin@csus.edu
 #Danielle Tasabia
 #Maximino Licon
 #Angel Espinoza
