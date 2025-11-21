@@ -1,6 +1,5 @@
 
 //bcrypt tutorial 1 https://www.youtube.com/watch?v=AzA_LTDoFqY
-//code taken directly from tutorial, not yet tested
 /*
 import bcrypt from 'bcrypt'
 import express from 'express'
@@ -42,7 +41,6 @@ app.listen(8080, () => console.log('listening 8080'))
 */
 
 //tutorial 2 https://www.youtube.com/watch?v=ywlEPtiaHZg
-//what folder should this file ultimately be saved in?
 //tutorial demonstrates using bcrypt by creating an app.js/password.js file
 
 /*import React from 'react';
