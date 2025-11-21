@@ -40,6 +40,7 @@ function App() {
         <Link to="/Profile">Go to Profile Page</Link>
       </p>
       <p className="read-the-docs">
+        <Link to="/userInput">add a user!</Link>
         <Link to="/MyEventsOrganizer">MyEventsOrganizer</Link>
       </p>
     </>
