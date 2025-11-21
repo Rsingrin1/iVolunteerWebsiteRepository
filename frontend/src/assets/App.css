@@ -18,6 +18,14 @@
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
+/* Arrange the Vite and React logos side-by-side */
+.logo-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
