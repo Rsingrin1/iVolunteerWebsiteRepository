@@ -7,9 +7,10 @@ import {
   MenuItem,
   IconButton,
 } from "@chakra-ui/react";
-//import { ChevronDownIcon } from "@chakra-ui/icons";
+import { useNavigate } from "react-router-dom";
 
 export default function Profile({ userName, profilePic, onLogout }) {
+  const navigate = useNavigate(); //this is using react router to navigate
   return (
     <Menu>
       <MenuButton
@@ -26,9 +27,7 @@ export default function Profile({ userName, profilePic, onLogout }) {
         _hover={{ bg: "transparent" }}
       />
       <MenuList>
-        <MenuItem onClick={() => console.log("Go to My Profile")}>
-          My Profile
-        </MenuItem>
+        <MenuItem onClick={() => navigate("/Profile")}>My Profile</MenuItem>
         <MenuItem onClick={() => console.log("Go to Home")}>Home</MenuItem>
         <MenuItem onClick={onLogout || (() => console.log("Logout"))}>
           Logout
