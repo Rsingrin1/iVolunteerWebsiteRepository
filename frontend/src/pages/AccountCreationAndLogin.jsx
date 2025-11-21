@@ -1,4 +1,3 @@
-import { ArrowLeftIcon } from "lucide-react";
 import React from "react";
 import {
   Box,
@@ -27,10 +26,11 @@ const formFields = [
   },
 ];
 
-export const Volunteer = () => {
+export default function Volunteer() {
   return (
     <Box
       minH="100vh"
+      w="100vw"              // make blue background full-width
       display="flex"
       alignItems="center"
       justifyContent="center"
@@ -39,13 +39,9 @@ export const Volunteer = () => {
       data-model-id="16:8"
     >
       <Container maxW="1550px" position="relative">
+        {/* Title section */}
         <VStack spacing={8} mb={8}>
-          <VStack
-            spacing={2}
-            opacity={0}
-            transform="translateY(-1rem)"
-            animation="fade-in 1s 0ms ease forwards"
-          >
+          <VStack spacing={2}>
             <Heading
               as="h1"
               color="white"
@@ -70,6 +66,7 @@ export const Volunteer = () => {
           </VStack>
         </VStack>
 
+        {/* Back Button */}
         <IconButton
           position="absolute"
           top={0}
@@ -79,21 +76,24 @@ export const Volunteer = () => {
           variant="ghost"
           colorScheme="whiteAlpha"
           aria-label="Go back"
-          icon={<ArrowLeftIcon size={32} color="white" />}
-          opacity={0}
-          transform="translateY(-1rem)"
-          animation="fade-in 1s 200ms ease forwards"
+          icon={
+            <Box as="span" fontSize="32px" color="white">
+              ←
+            </Box>
+          }
           _hover={{ bg: "whiteAlpha.100" }}
         />
 
-        <Box
-          display="flex"
-          justifyContent="center"
-          opacity={0}
-          transform="translateY(-1rem)"
-          animation="fade-in 1s 400ms ease forwards"
-        >
-          <Card maxW="444px" w="full" borderColor="#d9d9d9">
+        {/* Registration Card */}
+        <Box display="flex" justifyContent="center">
+          <Card
+            maxW="444px"
+            w="full"
+            borderWidth="1px"
+            borderColor="#d9d9d9"
+            bg="white"
+            boxShadow="none"
+          >
             <CardBody p={6}>
               <VStack as="form" spacing={6}>
                 {formFields.map((field) => (
@@ -132,7 +132,7 @@ export const Volunteer = () => {
                   h="auto"
                   p={3}
                   bg="#2c2c2c"
-                  color="neutral.100"
+                  color="white"
                   borderRadius="lg"
                   fontSize="16px"
                   fontWeight="400"
@@ -149,4 +149,4 @@ export const Volunteer = () => {
       </Container>
     </Box>
   );
-};
+}

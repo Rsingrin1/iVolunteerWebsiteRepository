@@ -30,6 +30,9 @@ function App() {
       <p className="read-the-docs">
         <Link to="/About">Go to About Page</Link>
       </p>
+      <p className="read-the-docs">
+        <Link to="/volunteer">Go to Login Page</Link>
+      </p>
     </>
   )
 }
