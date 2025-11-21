@@ -1,11 +1,10 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import About from "./pages/About.jsx";
-import Volunteer from "./pages/AccountCreationAndLogin.jsx";
-import SimpleForm from "./pages/exampleMongoHookup.jsx";
-import Profile from "./pages/PofilePage.jsx";
+import ExampleMongoHookup from "./pages/exampleMongoHookup.jsx";
 import TestPage from "./pages/testPage.jsx";
-
+import Profile from "./pages/PofilePage.jsx";
+import MyEventsOrganizer from "./pages/MyEventsOrganizer.jsx";
 
 
 export default function App() {
@@ -13,10 +12,11 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home/>} />
         <Route path="/about" element={<About/>} />
-        <Route path="/volunteer" element={<Volunteer/>} />
-        <Route path="/simpleform" element={<SimpleForm/>} />
-        <Route path="/profile" element={<Profile/>} />
-        <Route path="/testpage" element={<TestPage/>} />
+        <Route path="/exampleMongoHookup" element={<ExampleMongoHookup/>} />
+        <Route path="/testPage" element={<TestPage/>} />
+        <Route path="/Profile" element={<Profile/>} />
+        <Route path="/MyEventsOrganizer" element={<MyEventsOrganizer/>} />
+
       </Routes>
   );
 }
