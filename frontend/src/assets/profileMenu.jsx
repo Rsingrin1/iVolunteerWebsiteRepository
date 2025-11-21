@@ -27,7 +27,7 @@ export default function Profile({ userName, profilePic, onLogout }) {
         _hover={{ bg: "transparent" }}
       />
       <MenuList>
-        <MenuItem onClick={() => navigate("/profile")}>My Profile</MenuItem>
+        <MenuItem onClick={() => navigate("/Profile")}>My Profile</MenuItem>
         <MenuItem onClick={() => console.log("Go to Home")}>Home</MenuItem>
         <MenuItem onClick={onLogout || (() => console.log("Logout"))}>
           Logout
