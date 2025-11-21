@@ -1,13 +1,30 @@
 import React, { useState } from "react";
 import { Box, Button, Input, VStack } from "@chakra-ui/react";
 
+
 export default function SimpleForm() {
   const [text, setText] = useState("");
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault();                   //prevent default browser behavior of refreshing page
     console.log("Submitted value:", text);
     // Here you can send 'text' to your backend API to save in MongoDB
+
+
+    //const res = fetch('http://localhost:5000/message', { method: 'GET'})
+  
+  /*post request example postData();
+  const postData = async () => {
+  try {
+    const response = await fetch('http://localhost:3000/api/data', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: 'John Doe',
+      }),
+    });*/  
   };
 
   return (
