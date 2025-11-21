@@ -13,5 +13,8 @@ dotenv.config();
 import { connectDB } from "./config/db.js";
 connectDB();
 
-//import route from "./routes/userRoute.js";
-//app.use("/api",route); // what is /api???
+import userRoute from "./routes/userRoute.js";
+app.use("/api",userRoute); 
+app.get("/api/user",(req,res)=>{
+    res.send(userRoute);
+});

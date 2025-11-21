@@ -1,5 +1,3 @@
-/*
-
 import mongoose from "mongoose"
 
 //tutorial - define schema, insert data
@@ -18,4 +16,3 @@ const userSchema = new mongoose.Schema({
 })
 
 export default mongoose.model("Users", userSchema)
-*/
