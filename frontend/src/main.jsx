@@ -3,13 +3,13 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import './assets/index.css'
-import { ChakraProvider, defaultSystem } from '@chakra-ui/react'
+import { ChakraProvider} from '@chakra-ui/react'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ChakraProvider value={defaultSystem}>
+    <ChakraProvider >
       <BrowserRouter>
         <App />
       </BrowserRouter>
