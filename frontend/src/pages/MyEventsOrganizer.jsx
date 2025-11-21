@@ -13,7 +13,7 @@ import {
   HStack,
 } from "@chakra-ui/react";
 import React from "react";
-// import { IoArrowBack } from "react-icons/io5"; // temporarily removed
+
 
 const eventsData = [
   {

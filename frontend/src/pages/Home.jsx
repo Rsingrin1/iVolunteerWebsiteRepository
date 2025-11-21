@@ -31,16 +31,16 @@ function App() {
         <Link to="/About">Go to About Page</Link>
       </p>
       <p className="read-the-docs">
-        <Link to="/volunteer">Go to Login Page</Link>
+        <Link to="/exampleMongoHookup">Go to Example Mongo Hookup Page</Link>
       </p>
       <p className="read-the-docs">
-        <Link to="/simpleform">Go to Simple Form Page</Link>
+        <Link to="/testPage">Test page</Link>
       </p>
       <p className="read-the-docs">
-        <Link to="/profile">Go to Profile Page</Link>
+        <Link to="/Profile">Go to Profile Page</Link>
       </p>
       <p className="read-the-docs">
-        <Link to="/testpage">Go to Test Page</Link>
+        <Link to="/MyEventsOrganizer">MyEventsOrganizer</Link>
       </p>
     </>
   )
