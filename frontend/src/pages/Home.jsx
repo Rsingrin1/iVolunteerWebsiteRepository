@@ -10,7 +10,7 @@ function App() {
 
   return (
     <>
-      <div>
+      <div className="logo-row">
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
         </a>
@@ -29,6 +29,15 @@ function App() {
       </div>
       <p className="read-the-docs">
         <Link to="/About">Go to About Page</Link>
+      </p>
+      <p className="read-the-docs">
+        <Link to="/exampleMongoHookup">Go to Example Mongo Hookup Page</Link>
+      </p>
+      <p className="read-the-docs">
+        <Link to="/testPage">Test page</Link>
+      </p>
+      <p className="read-the-docs">
+        <Link to="/Profile">Go to Profile Page</Link>
       </p>
     </>
   )
