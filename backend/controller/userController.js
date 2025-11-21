@@ -5,7 +5,7 @@
 
 import User from "../model/userModel.js";
 
-//function to create new user instance?
+//function to create new user instance
 export const create = async(req, res) =>{
     try{
         const newUser = new User(req.body); //req.body --> sending info from client to server
