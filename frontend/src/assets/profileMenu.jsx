@@ -37,3 +37,5 @@ export default function Profile({ userName, profilePic, onLogout }) {
     </Menu>
   );
 }
+
+

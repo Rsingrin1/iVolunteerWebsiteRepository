@@ -32,6 +32,11 @@ function App() {
       </p>
       <p className="read-the-docs">
         <Link to="/exampleMongoHookup">Go to Example Mongo Hookup Page</Link>
+        
+      </p>
+      <p className="read-the-docs">
+        <Link to="/testPage">Test page</Link>
+        
       </p>
     </>
   )
