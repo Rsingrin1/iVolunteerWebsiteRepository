@@ -41,7 +41,9 @@ function App() {
       </p>
       <p className="read-the-docs">
         <Link to="/userInput">add a user!</Link>
-        <Link to="/MyEventsOrganizer">MyEventsOrganizer</Link>
+      </p>
+      <p className="read-the-docs">
+      <Link to="/MyEventsOrganizer">MyEventsOrganizer</Link>
       </p>
     </>
   )
