@@ -40,16 +40,6 @@ const User = () => {
                 <td>{user.name}</td>
                 <td>{user.email} </td>
                 <td>{user.address}</td>
-                <td className="actionButtons">
-                  <Link
-                    to={`/update/` + user._id}
-                    type="button"
-                    class="btn btn-info"
-                  >
-                    <i class="fa-solid fa-pen-to-square"></i>
-                  </Link>
-
-                </td>
               </tr>
             );
           })}
