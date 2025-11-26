@@ -31,6 +31,9 @@ export default function InputUser() {
       return;
     }
 
+    //tutorial - persist logged in user
+    //https://www.freecodecamp.org/news/how-to-persist-a-logged-in-user-in-react/
+
     //setLoading(true);
 
     /* //leftover from copying from userInput.jsx
