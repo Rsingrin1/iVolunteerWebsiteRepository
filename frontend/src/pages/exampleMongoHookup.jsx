@@ -1,61 +1,62 @@
-import React, { useState } from "react";
-import { Box, Button, Input, VStack } from "@chakra-ui/react";
+import React, { useEffect, useState } from "react";
+import "../assets/adduser.css";
+import axios from "axios";
+import { Link } from "react-router-dom";
+//import toast from "react-hot-toast";
 
+const User = () => {
+  const [users, setUsers] = useState([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/users");
+        setUsers(response.data);
+      } catch (error) {
+        console.log("Error while fetching data", error);
+      }
+    };
+    fetchData();
+  }, []);
 
-export default function SimpleForm() {
-  const [text, setText] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();                   //prevent default browser behavior of refreshing page
-    console.log("Submitted value:", text);
-    // Here you can send 'text' to your backend API to save in MongoDB
-
-
-    //const res = fetch('http://localhost:5000/message', { method: 'GET'})
-  
-  /*post request example postData();
-  const postData = async () => {
-  try {
-    const response = await fetch('http://localhost:3000/api/data', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: 'John Doe',
-      }),
-    });*/  
-  };
 
   return (
-    <Box
-      minH="100vh"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      bg="#1f49b6"
-      p={6}
-    >
-      <Box
-        bg="white"
-        p={6}
-        borderRadius="lg"
-        boxShadow="md"
-        minW="300px"
-      >
-        <form onSubmit={handleSubmit}>
-          <VStack spacing={4}>
-            <Input
-              placeholder="Enter text"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-            />
-            <Button type="submit" colorScheme="blue" w="full">
-              Submit
-            </Button>
-          </VStack>
-        </form>
-      </Box>
-    </Box>
+    <div className="userTable">
+
+      <table className="table table-bordered">
+        <thead>
+          <tr>
+            <th scope="col">S.No.</th>
+            <th scope="col">Name</th>
+            <th scope="col">Email</th>
+            <th scope="col">Address</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((user, index) => {
+            return (
+              <tr>
+                <td>{index + 1}</td>
+                <td>{user.name}</td>
+                <td>{user.email} </td>
+                <td>{user.address}</td>
+                <td className="actionButtons">
+                  <Link
+                    to={`/update/` + user._id}
+                    type="button"
+                    class="btn btn-info"
+                  >
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </Link>
+
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
-}
+};
+
+export default User;

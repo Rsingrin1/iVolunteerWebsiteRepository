@@ -43,7 +43,7 @@ function App() {
         <Link to="/userInput">add a user!</Link>
       </p>
       <p className="read-the-docs">
-        <Link to="/MyEventsOrganizer">MyEventsOrganizer</Link>
+      <Link to="/MyEventsOrganizer">MyEventsOrganizer</Link>
       </p>
       <p className="read-the-docs">
         <Link to="/Login">Login</Link>
