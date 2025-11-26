@@ -6,6 +6,8 @@ import TestPage from "./pages/testPage.jsx";
 import Profile from "./pages/PofilePage.jsx";
 import InputUserPage from "./pages/userInput.jsx";
 import MyEventsOrganizer from "./pages/MyEventsOrganizer.jsx";
+import VolunteerSignUp from "./pages/VolunteerSignUp.jsx";
+
 
 
 export default function App() {
@@ -19,6 +21,9 @@ export default function App() {
         <Route path="/userInput" element={<InputUserPage/>} />
 
         <Route path="/MyEventsOrganizer" element={<MyEventsOrganizer/>} />
+
+        <Route path="/register-volunteer" element={<VolunteerSignUp />} />
+
 
       </Routes>
   );
