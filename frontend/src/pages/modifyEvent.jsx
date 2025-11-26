@@ -18,6 +18,7 @@ import {
   Image,
 } from "@chakra-ui/react";
 
+
 const sectionData = [
   { title: "Time & Location" },
   { title: "Forms" },
@@ -746,5 +747,6 @@ export default function ModifyEvent() {
         </VStack>
       </Container>
     </Box>
+    
   );
 }
