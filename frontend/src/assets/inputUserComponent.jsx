@@ -1,3 +1,4 @@
+/*
 import React, { useState } from "react";
 import {
   Box,
@@ -126,3 +127,4 @@ export default function InputUser() {
     </Box>
   );
 }
+*/

@@ -6,9 +6,7 @@ import TestPage from "./pages/testPage.jsx";
 import Profile from "./pages/PofilePage.jsx";
 import InputUserPage from "./pages/userInput.jsx";
 import MyEventsOrganizer from "./pages/MyEventsOrganizer.jsx";
-import VolunteerSignUp from "./pages/VolunteerSignUp.jsx";
-
-
+import Login from "./pages/Login.jsx";
 
 export default function App() {
   return (
@@ -19,6 +17,7 @@ export default function App() {
         <Route path="/testPage" element={<TestPage/>} />
         <Route path="/Profile" element={<Profile/>} />
         <Route path="/userInput" element={<InputUserPage/>} />
+        <Route path="/Login" element={<Login/>} />
 
         <Route path="/MyEventsOrganizer" element={<MyEventsOrganizer/>} />
 

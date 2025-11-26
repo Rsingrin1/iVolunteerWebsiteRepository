@@ -46,7 +46,7 @@ function App() {
       <Link to="/MyEventsOrganizer">MyEventsOrganizer</Link>
       </p>
       <p className="read-the-docs">
-        <Link to="/register-volunteer">Volunteer Sign Up</Link>
+        <Link to="/Login">Login</Link>
       </p>
     </>
   )
