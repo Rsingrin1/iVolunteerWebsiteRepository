@@ -14,7 +14,6 @@ import {
 
 export default function InputUser() {
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
@@ -27,17 +26,20 @@ export default function InputUser() {
     setMessage(null);
     setError(null);
 
-    if (!username || !email || !password) {
+    if (!username || !password) {
       setError("Please fill in all fields.");
       return;
     }
 
-    setLoading(true);
+    //setLoading(true);
+
+    /* //leftover from copying from userInput.jsx
+    //how to check credentials for login?
     try {
       const res = await fetch(`${API_BASE}/api/user`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, hash: password }),
+        body: JSON.stringify({ username, hash: password }),
       });
 
       // Safely handle responses that may be empty or not JSON
@@ -56,24 +58,23 @@ export default function InputUser() {
       } else {
         setMessage((data && data.message) || "User created successfully.");
         setUsername("");
-        setEmail("");
         setPassword("");
       }
     } catch (err) {
       setError(err.message || "Network error");
     } finally {
       setLoading(false);
-    }
+    }*/
+
   };
 
   return (
     <Box p={6} maxW="720px" mx="auto">
         <Heading as="h2" size="lg" mb={6} textAlign="center">
-            Test Page
         </Heading>
         <Box p={6} maxW="480px" mx="auto">
         <Heading as="h2" size="lg" mb={4} textAlign="center">
-            Create User
+            Login
         </Heading>
 
         {message && (
@@ -102,17 +103,6 @@ export default function InputUser() {
             </FormControl>
 
             <FormControl>
-            <FormLabel>Email</FormLabel>
-            <Input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="email@example.com"
-                type="email"
-                bg="white"
-            />
-            </FormControl>
-
-            <FormControl>
             <FormLabel>Password</FormLabel>
             <Input
                 value={password}
@@ -124,7 +114,7 @@ export default function InputUser() {
             </FormControl>
 
             <Button type="submit" isLoading={loading} w="full" colorScheme="blue">
-            Create
+            Submit
             </Button>
         </VStack>
         </Box>
