@@ -46,11 +46,11 @@ function App() {
       <Link to="/MyEventsOrganizer">MyEventsOrganizer</Link>
       </p>
       <p className="read-the-docs">
-<<<<<<< HEAD
       <Link to="/getUserByID">Get User By ID</Link>
-=======
-        <Link to="/Login">Login</Link>
->>>>>>> main
+
+      </p>
+      <p className="read-the-docs">
+      <Link to="/Login">Login</Link>
       </p>
     </>
   )
