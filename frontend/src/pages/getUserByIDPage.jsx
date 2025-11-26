@@ -1,15 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "../assets/adduser.css";
 import axios from "axios";
-import { Link } from "react-router-dom";
-//import toast from "react-hot-toast";
 
-const User = () => {
+const getUserByID = () => {
   const [users, setUsers] = useState([]);
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/users");
+        const response = await axios.get("http://localhost:5000/api/user/:691ffde1a9ca2e914144518b");
         setUsers(response.data);
       } catch (error) {
         console.log("Error while fetching data", error);
@@ -48,4 +46,4 @@ const User = () => {
   );
 };
 
-export default User;
+export default getUserByID;
