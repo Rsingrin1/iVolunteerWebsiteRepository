@@ -16,7 +16,7 @@ export default function App() {
         <Route path="/about" element={<About/>} />
         <Route path="/exampleMongoHookup" element={<ExampleMongoHookup/>} />
         <Route path="/testPage" element={<TestPage/>} />
-        <Route path="/Profile" element={<Profile/>} />
+        <Route path="/Profile/:id" element={<Profile/>} />
         <Route path="/userInput" element={<InputUserPage/>} />
         <Route path="/Login" element={<Login/>} />
 

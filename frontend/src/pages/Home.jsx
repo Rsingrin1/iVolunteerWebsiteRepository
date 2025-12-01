@@ -37,7 +37,7 @@ function App() {
         <Link to="/testPage">Test page</Link>
       </p>
       <p className="read-the-docs">
-        <Link to="/Profile">Go to Profile Page</Link>
+        <Link to="/Profile/691ffde1a9ca2e914144518b">Go to Profile Page</Link>
       </p>
       <p className="read-the-docs">
         <Link to="/userInput">add a user!</Link>
