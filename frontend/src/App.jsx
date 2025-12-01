@@ -21,7 +21,7 @@ export default function App() {
         <Route path="/Login" element={<Login/>} />
 
         <Route path="/MyEventsOrganizer" element={<MyEventsOrganizer/>} />
-        <Route path="/getUserByID" element={<GetUserByID/>} />
+        <Route path="/getUserByID/:id" element={<GetUserByID/>} />
       </Routes>
   );
 }

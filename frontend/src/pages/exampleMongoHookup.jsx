@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "../assets/adduser.css";
+import "../assets/editUser.css";
 import axios from "axios";
 import { Link } from "react-router-dom";
 //import toast from "react-hot-toast";
