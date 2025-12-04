@@ -6,6 +6,7 @@ import TestPage from "./pages/testPage.jsx";
 import Profile from "./pages/PofilePage.jsx";
 import InputUserPage from "./pages/userInput.jsx";
 import MyEventsOrganizer from "./pages/MyEventsOrganizer.jsx";
+import GetUserByID from "./pages/getUserByIDPage.jsx";
 import Login from "./pages/Login.jsx";
 import VolunteerSignUp from "./pages/VolunteerSignUp.jsx";
 
@@ -17,7 +18,7 @@ export default function App() {
         <Route path="/about" element={<About/>} />
         <Route path="/exampleMongoHookup" element={<ExampleMongoHookup/>} />
         <Route path="/testPage" element={<TestPage/>} />
-        <Route path="/Profile" element={<Profile/>} />
+        <Route path="/Profile/:id" element={<Profile/>} />
         <Route path="/userInput" element={<InputUserPage/>} />
         <Route path="/Login" element={<Login/>} />
 
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/VolunteerSignUp" element={<VolunteerSignUp />} />
 
 
+        <Route path="/getUserByID/:id" element={<GetUserByID/>} />
       </Routes>
   );
 }
