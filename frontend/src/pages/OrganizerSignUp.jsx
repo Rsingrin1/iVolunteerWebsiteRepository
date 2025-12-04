@@ -8,13 +8,13 @@ import {
   FormControl,
   FormLabel,
   Heading,
-  IconButton,
   Input,
   Text,
   VStack,
   Alert,
   AlertIcon,
 } from "@chakra-ui/react";
+import BackArrow from "../assets/backArrow";
 
 const formFields = [
   { id: "email", label: "Email", type: "email", placeholder: "Value" },
@@ -115,7 +115,7 @@ export default function OrganizerSignUp() {
       alignItems="center"
       justifyContent="center"
       bg="#1f49b6"
-      p={6}
+      boxSizing="border-box"
     >
   <Container maxW="container.md" position="relative" px={4}>
         {/* Page Title */}
@@ -146,22 +146,7 @@ export default function OrganizerSignUp() {
         </VStack>
 
         {/* Back Button */}
-        <IconButton
-          position="absolute"
-          top={0}
-          left={-10}
-          w="79px"
-          h="79px"
-          variant="ghost"
-          colorScheme="whiteAlpha"
-          aria-label="Go back"
-          icon={
-            <Box as="span" fontSize="32px" color="white">
-              ←
-            </Box>
-          }
-          _hover={{ bg: "whiteAlpha.100" }}
-        />
+        <BackArrow size="32px" color="white" top={0} left={0} />
 
         {/* Registration Form Card */}
         <Box display="flex" justifyContent="center">
