@@ -7,6 +7,8 @@ import Profile from "./pages/PofilePage.jsx";
 import InputUserPage from "./pages/userInput.jsx";
 import MyEventsOrganizer from "./pages/MyEventsOrganizer.jsx";
 import Login from "./pages/Login.jsx";
+import VolunteerSignUp from "./pages/VolunteerSignUp.jsx";
+
 
 export default function App() {
   return (
@@ -21,7 +23,7 @@ export default function App() {
 
         <Route path="/MyEventsOrganizer" element={<MyEventsOrganizer/>} />
 
-        <Route path="/register-volunteer" element={<VolunteerSignUp />} />
+        <Route path="/VolunteerSignUp" element={<VolunteerSignUp />} />
 
 
       </Routes>

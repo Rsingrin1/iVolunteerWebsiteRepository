@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -12,6 +12,8 @@ import {
   Input,
   Text,
   VStack,
+  Alert,
+  AlertIcon,
 } from "@chakra-ui/react";
 
 const formFields = [
@@ -26,7 +28,85 @@ const formFields = [
   },
 ];
 
+const API_BASE = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+
 export default function VolunteerSignUp() {
+  const [formData, setFormData] = useState({
+    email: "",
+    username: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(null);
+  const [error, setError] = useState(null);
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setMessage(null);
+    setError(null);
+
+    const { email, username, password, confirmPassword } = formData;
+
+    if (!email || !username || !password || !confirmPassword) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // backend expects { username, email, hash }
+        body: JSON.stringify({ username, email, hash: password }),
+      });
+
+      let data = null;
+      const contentType = res.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        try {
+          data = await res.json();
+        } catch {
+          // ignore parse error, keep data = null
+        }
+      }
+
+      if (!res.ok) {
+        setError(
+          (data && (data.message || data.errorMessage)) ||
+          `Request failed with status ${res.status}`
+        );
+      } else {
+        setMessage((data && data.message) || "User created successfully.");
+        setFormData({
+          email: "",
+          username: "",
+          password: "",
+          confirmPassword: "",
+        });
+      }
+    } catch (err) {
+      setError(err.message || "Network error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <Box
       minH="100vh"
@@ -38,7 +118,6 @@ export default function VolunteerSignUp() {
       p={6}
     >
       <Container maxW="1550px" position="relative">
-        
         {/* Page Title */}
         <VStack spacing={8} mb={8}>
           <VStack spacing={2}>
@@ -84,7 +163,7 @@ export default function VolunteerSignUp() {
           _hover={{ bg: "whiteAlpha.100" }}
         />
 
-        {/* Registration Form */}
+        {/* Registration Form Card */}
         <Box display="flex" justifyContent="center">
           <Card
             maxW="444px"
@@ -95,8 +174,21 @@ export default function VolunteerSignUp() {
             boxShadow="none"
           >
             <CardBody p={6}>
-              <VStack as="form" spacing={6}>
-                
+              {/* Alerts */}
+              {message && (
+                <Alert status="success" mb={4} borderRadius="md">
+                  <AlertIcon />
+                  <Text>{message}</Text>
+                </Alert>
+              )}
+              {error && (
+                <Alert status="error" mb={4} borderRadius="md">
+                  <AlertIcon />
+                  <Text>{error}</Text>
+                </Alert>
+              )}
+
+              <VStack as="form" spacing={6} onSubmit={handleSubmit}>
                 {formFields.map((field) => (
                   <FormControl key={field.id}>
                     <FormLabel
@@ -108,9 +200,9 @@ export default function VolunteerSignUp() {
                     >
                       {field.label}
                     </FormLabel>
-
                     <Input
                       id={field.id}
+                      name={field.id}
                       type={field.type}
                       placeholder={field.placeholder}
                       minW="240px"
@@ -121,14 +213,15 @@ export default function VolunteerSignUp() {
                       borderColor="#d9d9d9"
                       fontSize="16px"
                       fontWeight="400"
-                      color="#b3b3b3"
+                      color="#1e1e1e"
                       lineHeight="1"
                       _placeholder={{ color: "#b3b3b3" }}
+                      value={formData[field.id]}
+                      onChange={handleChange}
                     />
                   </FormControl>
                 ))}
 
-                {/* Submit Button */}
                 <Button
                   type="submit"
                   w="full"
@@ -141,11 +234,11 @@ export default function VolunteerSignUp() {
                   fontWeight="400"
                   lineHeight="1"
                   _hover={{ bg: "#2c2c2c", opacity: 0.9 }}
+                  isLoading={loading}
                   transition="all 0.2s"
                 >
                   Register
                 </Button>
-
               </VStack>
             </CardBody>
           </Card>
