@@ -146,7 +146,7 @@ export default function OrganizerSignUp() {
         </VStack>
 
         {/* Back Button */}
-        <BackArrow size="32px" color="white" top={0} left={0} />
+        <BackArrow/>
 
         {/* Registration Form Card */}
         <Box display="flex" justifyContent="center">
