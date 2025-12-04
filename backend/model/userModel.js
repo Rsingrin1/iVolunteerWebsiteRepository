@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema({
         required:true
     },
     userType:{
+        type:String,
         enum: ['volunteer','organizer']
         //required:true //disabled for testing //update register pages to set roles
     },

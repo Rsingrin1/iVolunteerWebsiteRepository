@@ -10,6 +10,9 @@ import ModifyEvent from "./pages/modifyEvent.jsx";
 import GetUserByID from "./pages/getUserByIDPage.jsx";
 import Login from "./pages/Login.jsx";
 import VolunteerSignUp from "./pages/VolunteerSignUp.jsx";
+import LandingPage from "./pages/landingPage.jsx";
+import OrganizerSignUp from "./pages/OrganizerSignUp.jsx";
+
 
 
 export default function App() {
@@ -24,11 +27,10 @@ export default function App() {
         <Route path="/modifyEvent" element={<ModifyEvent/>} />
         <Route path="/Login" element={<Login/>} />
         <Route path="/MyEventsOrganizer" element={<MyEventsOrganizer/>} />
-
         <Route path="/VolunteerSignUp" element={<VolunteerSignUp />} />
-
-
         <Route path="/getUserByID/:id" element={<GetUserByID/>} />
+        <Route path="/landingPage" element={<LandingPage/>} />
+        <Route path="/OrganizerSignUp" element={<OrganizerSignUp />} />
       </Routes>
   );
 }

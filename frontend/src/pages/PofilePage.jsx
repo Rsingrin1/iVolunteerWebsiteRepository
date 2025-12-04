@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 
 import { useNavigate, useParams } from "react-router-dom";
-import useUser from "../hooks/userInteractHook";
+import useUser from "../hooks/userInteractHook.jsx";
 
 export default function Profile() {
   const navigate = useNavigate();
