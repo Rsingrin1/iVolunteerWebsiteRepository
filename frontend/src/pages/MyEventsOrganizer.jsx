@@ -13,7 +13,7 @@ import {
   HStack,
 } from "@chakra-ui/react";
 import React from "react";
-
+import Profile from "../assets/profileMenu"; // 👈 same import as TestPage (change if path differs)
 
 const eventsData = [
   {
@@ -40,6 +40,12 @@ const eventsData = [
 ];
 
 export default function MyEventsOrganizer() {
+  // 👇 same idea as in TestPage
+  const handleLogout = () => {
+    console.log("Logout clicked from My Events Organizer page!");
+    // add real logout logic later
+  };
+
   return (
     <Box bg="white" minH="100vh" data-model-id="16:90">
       <Flex
@@ -59,16 +65,11 @@ export default function MyEventsOrganizer() {
           animation="fadeIn 1s 0ms ease forwards"
         />
 
-        <Box
-          w="69px"
-          h="69px"
-          borderRadius="full"
-          bgImage="url(https://c.animaapp.com/mi8ag1zmhjvnyo/img/shape.png)"
-          bgSize="cover"
-          bgPosition="center"
-          opacity={0}
-          transform="translateY(-1rem)"
-          animation="fadeIn 1s 100ms ease forwards"
+        {/* 🔽 Replaced the static Box avatar with the working Profile menu */}
+        <Profile
+          userName="Rhys Singrin"
+          profilePic="https://bit.ly/dan-abramov"
+          onLogout={handleLogout}
         />
       </Flex>
 
