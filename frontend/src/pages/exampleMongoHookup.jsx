@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "../assets/adduser.css";
+import "../assets/editUser.css";
 import axios from "axios";
 import { Link } from "react-router-dom";
 //import toast from "react-hot-toast";
@@ -25,31 +25,20 @@ const User = () => {
       <table className="table table-bordered">
         <thead>
           <tr>
-            <th scope="col">S.No.</th>
+            <th scope="col">Index</th>
             <th scope="col">Name</th>
             <th scope="col">Email</th>
-            <th scope="col">Address</th>
-            <th scope="col">Actions</th>
+            <th scope="col">userID</th>
           </tr>
         </thead>
         <tbody>
           {users.map((user, index) => {
             return (
-              <tr>
+              <tr key={user._id}>
                 <td>{index + 1}</td>
-                <td>{user.name}</td>
+                <td>{user.username}</td>
                 <td>{user.email} </td>
-                <td>{user.address}</td>
-                <td className="actionButtons">
-                  <Link
-                    to={`/update/` + user._id}
-                    type="button"
-                    class="btn btn-info"
-                  >
-                    <i class="fa-solid fa-pen-to-square"></i>
-                  </Link>
-
-                </td>
+                <td>{user._id}</td>
               </tr>
             );
           })}
