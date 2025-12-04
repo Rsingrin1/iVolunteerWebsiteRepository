@@ -34,10 +34,7 @@ function App() {
         <Link to="/exampleMongoHookup">Go to Example Mongo Hookup Page</Link>
       </p>
       <p className="read-the-docs">
-        <Link to="/testPage">Test page</Link>
-      </p>
-      <p className="read-the-docs">
-        <Link to="/Profile/691ffde1a9ca2e914144518b">Go to Profile Page</Link>
+        <Link to="/Profile/6931f481110e34c9588001b0">Go to Profile Page</Link>
       </p>
       <p className="read-the-docs">
         <Link to="/userInput">add a user!</Link>
@@ -46,9 +43,13 @@ function App() {
        <Link to="/MyEventsOrganizer">MyEventsOrganizer</Link>
       </p>
       <p className="read-the-docs">
-      <Link to="/getUserByID/691ffde1a9ca2e914144518b">Get User By ID</Link>
-
+      <Link to="/getUserByID/6931f481110e34c9588001b0">Get User By ID</Link>
       </p>
+      <p className="read-the-docs">
+      <Link to="/landingPage">landingPage</Link>
+      </p>
+
+
       <p className="read-the-docs">
       <Link to="/Login">Login</Link>
       </p>

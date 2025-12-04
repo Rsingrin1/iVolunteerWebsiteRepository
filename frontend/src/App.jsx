@@ -9,7 +9,7 @@ import MyEventsOrganizer from "./pages/MyEventsOrganizer.jsx";
 import GetUserByID from "./pages/getUserByIDPage.jsx";
 import Login from "./pages/Login.jsx";
 import VolunteerSignUp from "./pages/VolunteerSignUp.jsx";
-
+import LandingPage from "./pages/landingPage.jsx";
 
 export default function App() {
   return (
@@ -21,13 +21,10 @@ export default function App() {
         <Route path="/Profile/:id" element={<Profile/>} />
         <Route path="/userInput" element={<InputUserPage/>} />
         <Route path="/Login" element={<Login/>} />
-
         <Route path="/MyEventsOrganizer" element={<MyEventsOrganizer/>} />
-
         <Route path="/VolunteerSignUp" element={<VolunteerSignUp />} />
-
-
         <Route path="/getUserByID/:id" element={<GetUserByID/>} />
+        <Route path="/landingPage" element={<LandingPage/>} />
       </Routes>
   );
 }
