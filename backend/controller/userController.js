@@ -9,8 +9,8 @@ import User from "../model/userModel.js";
 export const create = async(req, res) =>{
     try{
         const newUser = new User(req.body); //req.body --> sending info from client to server
-        const {email} = newUser;
-        const userExist = await User.findOne({email}); //define condition to check validity
+        const {username,email} = newUser;
+        const userExist = await User.findOne({username}) || await User.findOne({email}); //define condition to check validity
         if(userExist){
             return res.status(400).json({message: "User already exists."});
         }

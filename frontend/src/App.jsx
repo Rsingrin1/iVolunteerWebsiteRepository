@@ -10,6 +10,9 @@ import GetUserByID from "./pages/getUserByIDPage.jsx";
 import Login from "./pages/Login.jsx";
 import VolunteerSignUp from "./pages/VolunteerSignUp.jsx";
 import LandingPage from "./pages/landingPage.jsx";
+import OrganizerSignUp from "./pages/OrganizerSignUp.jsx";
+
+
 
 export default function App() {
   return (
@@ -25,6 +28,7 @@ export default function App() {
         <Route path="/VolunteerSignUp" element={<VolunteerSignUp />} />
         <Route path="/getUserByID/:id" element={<GetUserByID/>} />
         <Route path="/landingPage" element={<LandingPage/>} />
+        <Route path="/OrganizerSignUp" element={<OrganizerSignUp />} />
       </Routes>
   );
 }

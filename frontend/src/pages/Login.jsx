@@ -31,44 +31,6 @@ export default function InputUser() {
       return;
     }
 
-    //tutorial - persist logged in user
-    //https://www.freecodecamp.org/news/how-to-persist-a-logged-in-user-in-react/
-
-    //setLoading(true);
-
-    /* //leftover from copying from userInput.jsx
-    //how to check credentials for login?
-    try {
-      const res = await fetch(`${API_BASE}/api/user`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, hash: password }),
-      });
-
-      // Safely handle responses that may be empty or not JSON
-      let data = null;
-      const contentType = res.headers.get("content-type") || "";
-      if (contentType.includes("application/json")) {
-        try {
-          data = await res.json();
-        } catch (err) {
-          // ignore parse errors, data stays null
-        }
-      }
-
-      if (!res.ok) {
-        setError((data && (data.message || data.errorMessage)) || `Request failed with status ${res.status}`);
-      } else {
-        setMessage((data && data.message) || "User created successfully.");
-        setUsername("");
-        setPassword("");
-      }
-    } catch (err) {
-      setError(err.message || "Network error");
-    } finally {
-      setLoading(false);
-    }*/
-
   };
 
   return (

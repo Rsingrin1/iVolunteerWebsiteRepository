@@ -30,7 +30,7 @@ const formFields = [
 
 const API_BASE = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
-export default function VolunteerSignUp() {
+export default function OrganizerSignUp() {
   const [formData, setFormData] = useState({
     email: "",
     username: "",
@@ -73,7 +73,7 @@ export default function VolunteerSignUp() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         // backend expects { username, email, hash }
-        body: JSON.stringify({ username, email, hash: password, userType: "volunteer"}),
+        body: JSON.stringify({ username, email, hash: password, userType: "organizer"}),
       });
 
       let data = null;
@@ -130,7 +130,7 @@ export default function VolunteerSignUp() {
               letterSpacing="-2.16px"
               lineHeight="1.2"
             >
-              Volunteer Sign Up
+              Organizer Sign Up
             </Heading>
 
             <Text
@@ -140,7 +140,7 @@ export default function VolunteerSignUp() {
               textAlign="center"
               lineHeight="1.2"
             >
-              Create your volunteer account
+              Create your organizer account
             </Text>
           </VStack>
         </VStack>

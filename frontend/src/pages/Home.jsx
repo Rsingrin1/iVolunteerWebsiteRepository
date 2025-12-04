@@ -56,7 +56,9 @@ function App() {
       <p className="read-the-docs">
       <Link to="/VolunteerSignUp">Volunteer Sign Up</Link>
       </p>
-
+      <p className="read-the-docs">
+      <Link to="/OrganizerSignUp">Organizer Sign Up</Link>
+      </p>
 
     </>
   )

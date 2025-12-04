@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
   Box,
   Flex,
@@ -17,11 +18,13 @@ const signUpCards = [
     description:
       "Create an account to search and sign up for community volunteering events today!",
     image: "https://c.animaapp.com/mirxmmm4WbwQmJ/img/image-12.png",
+    link: "/VolunteerSignUp",
   },
   {
     title: "Organizer Sign Up",
     description: "Create an account to host your own community events!",
     image: "https://c.animaapp.com/mirxmmm4WbwQmJ/img/image-13.png",
+    link: "/OrganizerSignUp",
   },
 ];
 
@@ -55,7 +58,10 @@ export default function LandingPage() {
           alt="iVolunteer Logo"
         />
 
+         {/* LOGIN BUTTON WITH LINK */}
         <Button
+          as={Link}
+          to="/Login"
           mt="42px"
           px="17px"
           py="26px"
@@ -78,6 +84,8 @@ export default function LandingPage() {
         >
           {signUpCards.map((card, index) => (
             <Card
+              as={Link}
+              to={card.link}
               key={index}
               bg="white"
               border="1px solid #d9d9d9"
@@ -85,6 +93,7 @@ export default function LandingPage() {
               transition="all 0.2s"
               _hover={{ boxShadow: "xl", transform: "scale(1.02)" }}
               cursor="pointer"
+              textDecoration="none"
             >
               <CardBody display="flex" flexWrap="wrap" gap={6} p={6}>
                 <Box w="160px" h="160px" flexShrink={0}>
@@ -113,4 +122,4 @@ export default function LandingPage() {
       </Flex>
     </Box>
   );
-};
+}
