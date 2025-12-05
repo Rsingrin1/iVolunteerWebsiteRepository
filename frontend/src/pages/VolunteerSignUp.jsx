@@ -68,12 +68,6 @@ export default function VolunteerSignUp() {
       return;
     }
 
-    //HASH PASSWORD BEFORE SUBMIT - need to send to backend before hash
-    //const hash = await bcrypt.hash(password,13);
-    //axios.post('http://127.0.0.1:5173/VolunteerSignUp', {password})
-    //.then(result => console.log(result))
-    //.catch(err=> console.log(err));
-
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/user`, {
