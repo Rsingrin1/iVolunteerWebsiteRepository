@@ -73,6 +73,8 @@ app.post('/VolunteerSignUp', (req, res) => {
 
 //UNTESTED login verification - add frontend post request
 app.post("/Login", async (req, res) => {
+
+    //change to UserModel.login(req.body) after making separate function in userController?
     const {username, password} = req.body; //do i need to say hash instead of password or will this work?
     const user = await UserModel.findOne({username: username});
     if(!user){

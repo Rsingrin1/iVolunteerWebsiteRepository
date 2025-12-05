@@ -30,7 +30,21 @@ export default function InputUser() {
       setError("Please fill in all fields.");
       return;
     }
-
+    
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // backend expects { username, email, hash }
+        body: JSON.stringify({ username, hash: password}),
+      });
+      //skipped a lot of stuff here when i copied code from VolunteerSignUp
+    } catch (err) {
+      setError(err.message || "Network error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
