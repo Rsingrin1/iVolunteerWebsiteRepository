@@ -4,11 +4,23 @@
 //https://www.youtube.com/watch?v=oYoe8PDAXi0&list=PL1oBBulPlvs97CWAXfqLJra7TamlwsfdS&index=5
 
 import User from "../model/userModel.js";
+import bcrypt from 'bcrypt';
 
 //function to create new user instance
 export const create = async(req, res) =>{
     try{
-        const newUser = new User(req.body); //req.body --> sending info from client to server
+        
+        //HASH PASSWORD
+        console.log('password:', req.body.hash);
+        const password = req.body.hash;
+        const hash = await bcrypt.hash(password,13);
+        console.log('hash:', hash);
+        req.body.hash = hash;
+
+        const newUser = new User(req.body); //create new user
+        
+        
+        
         const {email} = newUser;
         const userExist = await User.findOne({email}); //define condition to check validity
         if(userExist){
