@@ -28,6 +28,8 @@ const User = () => {
             <th scope="col">Index</th>
             <th scope="col">Name</th>
             <th scope="col">Email</th>
+            <th scope="col">userID</th>
+            <th scope="col">Hash</th>
             <th scope="col">User Type</th>
           </tr>
         </thead>
@@ -38,6 +40,8 @@ const User = () => {
                 <td>{index + 1}</td>
                 <td>{user.username}</td>
                 <td>{user.email} </td>
+                <td>{user._id}</td>
+                <td>{user.hash}</td>
                 <td>{user.userType || "N/A"}</td>
               </tr>
             );

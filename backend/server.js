@@ -37,6 +37,7 @@ import cors from "cors";
 
 import { connectDB } from "./config/db.js";
 import userRoute from "./routes/userRoute.js";
+import UserModel from './model/userModel.js';
 
 dotenv.config();
 
@@ -60,3 +61,13 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server started at http://localhost:${PORT}`);
 });
+
+
+app.post('/VolunteerSignUp', (req, res) => {
+    UserModel.create(req.body)
+    .then(Users => res.json(Users))
+    .catch(err => res.json(err))
+})
+
+//add this post for login
+//https://youtu.be/ZVyIIyZJutM?t=1534
