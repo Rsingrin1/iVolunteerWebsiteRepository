@@ -30,6 +30,7 @@ const User = () => {
             <th scope="col">Email</th>
             <th scope="col">userID</th>
             <th scope="col">Hash</th>
+            <th scope="col">User Type</th>
           </tr>
         </thead>
         <tbody>
@@ -41,6 +42,7 @@ const User = () => {
                 <td>{user.email} </td>
                 <td>{user._id}</td>
                 <td>{user.hash}</td>
+                <td>{user.userType || "N/A"}</td>
               </tr>
             );
           })}

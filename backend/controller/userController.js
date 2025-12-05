@@ -17,12 +17,9 @@ export const create = async(req, res) =>{
         console.log('hash:', hash);
         req.body.hash = hash;
 
-        const newUser = new User(req.body); //create new user
-        
-        
-        
-        const {email} = newUser;
-        const userExist = await User.findOne({email}); //define condition to check validity
+        const newUser = new User(req.body); //req.body --> sending info from client to server
+        const {username,email} = newUser;
+        const userExist = await User.findOne({username}) || await User.findOne({email}); //define condition to check validity
         if(userExist){
             return res.status(400).json({message: "User already exists."});
         }
