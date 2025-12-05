@@ -34,6 +34,7 @@ app.use(express.json());*/
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import bcrypt from "bcrypt";
 
 import { connectDB } from "./config/db.js";
 import userRoute from "./routes/userRoute.js";
@@ -67,7 +68,22 @@ app.post('/VolunteerSignUp', (req, res) => {
     UserModel.create(req.body)
     .then(Users => res.json(Users))
     .catch(err => res.json(err))
-})
+});
 
-//add this post for login
-//https://youtu.be/ZVyIIyZJutM?t=1534
+
+//UNTESTED login verification - add frontend post request
+app.post("/Login", async (req, res) => {
+    const {username, password} = req.body; //do i need to say hash instead of password or will this work?
+    const user = await UserModel.findOne({username: username});
+    if(!user){
+        return res.status(401).json({message: "User not found"});
+    }
+
+    const isValid = await bcrypt.compare(password, user.hash);
+    if (!isValid) {
+        res.send("wrong password")
+        return;
+    }
+    res.status(200).json({ message: 'Login successful' });
+    console.log('Login successful');
+});
