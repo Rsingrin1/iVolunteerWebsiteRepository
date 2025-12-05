@@ -1,8 +1,14 @@
 // BackArrow.jsx
-import { IconButton, Box } from "@chakra-ui/react";
+import { IconButton } from "@chakra-ui/react";
+import { ArrowBackIcon } from "@chakra-ui/icons";   // ⬅️ use this instead
 import { useNavigate } from "react-router-dom";
 
-export default function BackArrow({ size = "70px", color = "white", top = 4, left = 4 }) {
+export default function BackArrow({
+  size = "40px",
+  color = "white",
+  top = 4,
+  left = 4,
+}) {
   const navigate = useNavigate();
 
   return (
@@ -12,14 +18,10 @@ export default function BackArrow({ size = "70px", color = "white", top = 4, lef
       left={left}
       aria-label="Go back"
       icon={
-        <Box
-          as="span"
-          fontSize={size}
-          fontWeight="bold"
-          lineHeight="1"
-        >
-          ←
-        </Box>
+        <ArrowBackIcon
+          boxSize={size}   // keeps your big, thick arrow
+          color={color}
+        />
       }
       onClick={() => navigate(-1)}
       variant="ghost"
@@ -29,9 +31,7 @@ export default function BackArrow({ size = "70px", color = "white", top = 4, lef
         bg: "whiteAlpha.200",
         transform: "scale(1.2)",
       }}
-      color={color}
       p={4}
-      
     />
   );
 }
