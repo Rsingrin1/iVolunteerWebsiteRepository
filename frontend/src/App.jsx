@@ -12,6 +12,7 @@ import Login from "./pages/Login.jsx";
 import VolunteerSignUp from "./pages/VolunteerSignUp.jsx";
 import LandingPage from "./pages/landingPage.jsx";
 import OrganizerSignUp from "./pages/OrganizerSignUp.jsx";
+import OrganizerDashboard from "./pages/OrganizerDashboard.jsx";
 
 
 
@@ -31,6 +32,8 @@ export default function App() {
         <Route path="/getUserByID/:id" element={<GetUserByID/>} />
         <Route path="/landingPage" element={<LandingPage/>} />
         <Route path="/OrganizerSignUp" element={<OrganizerSignUp />} />
+        <Route path="/OrganizerDashboard" element={<OrganizerDashboard />} />
       </Routes>
   );
+
 }
