@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -17,7 +17,8 @@ import {
   Flex,
   Image,
 } from "@chakra-ui/react";
-
+import { useNavigate } from "react-router-dom";
+import BackArrow from "../assets/backArrow";
 
 const sectionData = [
   { title: "Time & Location" },
@@ -25,44 +26,194 @@ const sectionData = [
   { title: "Notifications" },
 ];
 
+const API_BASE = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+
+// helper to read ?id=... from URL
+function getEventIdFromQuery() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("id");
+}
+
 export default function ModifyEvent() {
-  return (
-    <Box bg="white" minH="100vh" w="full">
-      {/* Header / Back */}
-      <Box as="header" w="full" p={6}>
-        <IconButton
-          aria-label="Go back"
-          icon={
-            <Box as="span" fontSize="40px">
-              ←
-            </Box>
+  const navigate = useNavigate();
+  const eventId = getEventIdFromQuery();
+  const isEdit = Boolean(eventId);
+
+const organizerId = localStorage.getItem("organizerId") || null;
+const authToken = localStorage.getItem("authToken") || null;
+
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    date: "",
+    location: "",
+    imageUrl: "",
+    notifMessage: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState(null);
+
+  // Load event if editing
+  useEffect(() => {
+    if (!isEdit) return;
+
+    const fetchEvent = async () => {
+      setLoading(true);
+      setApiError(null);
+      try {
+        const res = await fetch(`${API_BASE}/api/event/${eventId}`);
+        let data = null;
+        const contentType = res.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+          try {
+            data = await res.json();
+          } catch {
+            data = null;
           }
-          variant="ghost"
-          size="lg"
-          w="auto"
-          h="auto"
-          minW="auto"
-          p={0}
-        />
-      </Box>
+        }
 
-      <Container maxW="6xl" pb={10}>
-        <VStack spacing={12} w="full">
+        if (!res.ok) {
+          setApiError(
+            (data && (data.message || data.errorMessage)) ||
+              `Failed to load event (status ${res.status})`
+          );
+          return;
+        }
+
+        if (!data) return;
+
+        setForm({
+          name: data.name || "",
+          description: data.description || "",
+          // convert ISO date to "YYYY-MM-DDTHH:mm" for datetime-local input
+          date: data.date ? data.date.slice(0, 16) : "",
+          location: data.location || "",
+          imageUrl: data.imageUrl || "",
+          notifMessage: data.notifMessage || "",
+        });
+      } catch (err) {
+        setApiError(err.message || "Network error while loading event");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvent();
+  }, [eventId, isEdit]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setApiError(null);
+
+  if (!authToken) {
+    setApiError("You must be logged in as an organizer to save events.");
+    setLoading(false);
+    return;
+  }
+
+  if (!organizerId) {
+    setApiError("Missing organizer ID. Please log in again.");
+    setLoading(false);
+    return;
+  }
+
+  const payload = {
+    name: form.name,
+    description: form.description,
+    date: form.date ? new Date(form.date).toISOString() : null,
+    location: form.location,
+    imageUrl: form.imageUrl || undefined,
+    notifMessage: form.notifMessage || undefined,
+    organizerId,   // still send this so backend links event to user
+  };
+
+  try {
+    const url = isEdit
+      ? `${API_BASE}/api/update/event/${eventId}`
+      : `${API_BASE}/api/event`;
+    const method = isEdit ? "PUT" : "POST";
+
+    const res = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authToken}`,   // ⬅️ IMPORTANT
+      },
+      body: JSON.stringify(payload),
+    });
+
+    let data = null;
+    const contentType = res.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+    }
+
+    if (!res.ok) {
+      setApiError(
+        (data && (data.message || data.errorMessage)) ||
+          `Failed to ${isEdit ? "update" : "create"} event`
+      );
+      return;
+    }
+
+    // Success → go back to My Events
+    navigate("/MyEventsOrganizer");
+  } catch (err) {
+    setApiError(err.message || "Network error while saving event");
+  } finally {
+    setLoading(false);
+  }
+};
+
+  return (
+    <Box bg="#1f49b6" minH="100vh" w="full" pt={6}>
+      <Container maxW="6xl" px={4} pb={10}>
+        <BackArrow />
+
+        <VStack
+          as="form"
+          spacing={12}
+          w="full"
+          onSubmit={handleSubmit}
+          align="stretch"
+          mt={4}
+        >
           {/* Page Title */}
-          <Heading
-            as="h1"
-            size="xl"
-            textAlign="center"
-            fontFamily="'Roboto', Helvetica"
-            fontWeight={600}
-            fontSize="40px"
-            lineHeight="48px"
-            color="black"
-          >
-            Modify Event
-          </Heading>
+          <VStack spacing={4}>
+            <Heading
+              as="h1"
+              size="xl"
+              textAlign="center"
+              fontFamily="'Roboto', Helvetica"
+              fontWeight={600}
+              fontSize="40px"
+              lineHeight="48px"
+              color="white"
+            >
+              {isEdit ? "Modify Event" : "Create Event"}
+            </Heading>
+            {apiError && (
+              <Text color="red.300" textAlign="center">
+                {apiError}
+              </Text>
+            )}
+          </VStack>
 
-          {/* Description Section */}
+          {/* Description Section (full width) */}
           <Box w="full">
             <Heading
               as="h2"
@@ -71,98 +222,88 @@ export default function ModifyEvent() {
               fontFamily="'Lato', Helvetica"
               fontWeight={700}
               fontSize="32px"
-              color="black"
+              color="white"
             >
               Description
             </Heading>
 
-            <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={6}>
-              <Box
-                bg="#ece6f0"
-                borderRadius="20px"
-                boxShadow="0px 4px 4px rgba(0,0,0,0.25)"
-                p={6}
-              >
-                <VStack spacing={6} align="stretch">
-                  {/* Title */}
-                  <FormControl>
-                    <FormLabel
-                      fontFamily="'Inter', Helvetica"
-                      fontWeight={400}
-                      fontSize="16px"
-                      color="#1e1e1e"
-                    >
-                      Title
-                    </FormLabel>
-                    <Input
-                      placeholder="name your event"
-                      bg="#e6e6e6"
-                      borderColor="#d9d9d9"
-                      fontFamily="'Inter', Helvetica"
-                      fontSize="16px"
-                    />
-                  </FormControl>
+            <Box
+              w="100%"
+              bg="#e6f0ff"
+              borderRadius="20px"
+              boxShadow="0px 4px 4px rgba(0,0,0,0.25)"
+              p={8}
+            >
+              <VStack spacing={6} align="stretch">
+                {/* Title */}
+                <FormControl>
+                  <FormLabel
+                    fontFamily="'Inter', Helvetica"
+                    fontWeight={400}
+                    fontSize="16px"
+                    color="#0d2a73"
+                  >
+                    Title
+                  </FormLabel>
+                  <Input
+                    name="name"
+                    placeholder="Name your event"
+                    bg="white"
+                    borderColor="#b7c9e6"
+                    fontFamily="'Inter', Helvetica"
+                    fontSize="16px"
+                    value={form.name}
+                    onChange={handleChange}
+                  />
+                </FormControl>
 
-                  {/* Description */}
-                  <FormControl>
-                    <FormLabel
-                      fontFamily="'Inter', Helvetica"
-                      fontWeight={400}
-                      fontSize="16px"
-                      color="#1e1e1e"
-                    >
-                      Description
-                    </FormLabel>
-                    <Box position="relative">
-                      <Textarea
-                        placeholder="Describe your event"
-                        minH="80px"
-                        resize="none"
-                        bg="#e6e6e6"
-                        borderColor="#d9d9d9"
-                        fontFamily="'Inter', Helvetica"
-                        fontSize="16px"
-                      />
-                      <Image
-                        src="https://c.animaapp.com/mifbvir6JSInmQ/img/drag.svg"
-                        alt="Drag"
-                        w="7px"
-                        h="7px"
-                        position="absolute"
-                        right={2}
-                        bottom={2}
-                      />
-                    </Box>
-                  </FormControl>
+                {/* Description */}
+                <FormControl>
+                  <FormLabel
+                    fontFamily="'Inter', Helvetica"
+                    fontWeight={400}
+                    fontSize="16px"
+                    color="#0d2a73"
+                  >
+                    Description
+                  </FormLabel>
+                  <Textarea
+                    name="description"
+                    placeholder="Describe your event"
+                    minH="120px"
+                    resize="none"
+                    bg="white"
+                    borderColor="#b7c9e6"
+                    fontFamily="'Inter', Helvetica"
+                    fontSize="16px"
+                    value={form.description}
+                    onChange={handleChange}
+                  />
+                </FormControl>
 
-                  {/* Upload Image */}
-                  <FormControl>
-                    <FormLabel
-                      fontFamily="'Inter', Helvetica"
-                      fontWeight={400}
-                      fontSize="18px"
-                      color="#1e1e1e"
-                    >
-                      Upload Image
-                    </FormLabel>
-                    <IconButton
-                      aria-label="Upload image"
-                      variant="ghost"
-                      size="lg"
-                      w="48px"
-                      h="48px"
-                      p={0}
-                      _hover={{ bg: "transparent" }}
-                      icon={
-                        <Box as="span" fontSize="40px">
-                          +
-                        </Box>
-                      }
-                    />
-                  </FormControl>
-                </VStack>
-              </Box>
-            </SimpleGrid>
+                {/* Image URL */}
+                <FormControl>
+                  <FormLabel
+                    fontFamily="'Inter', Helvetica"
+                    fontWeight={400}
+                    fontSize="16px"
+                    color="#0d2a73"
+                  >
+                    Event Image URL
+                  </FormLabel>
+                  <Input
+                    name="imageUrl"
+                    placeholder="https://example.com/image.jpg"
+                    bg="white"
+                    borderColor="#b7c9e6"
+                    fontFamily="'Inter', Helvetica"
+                    fontSize="16px"
+                    value={form.imageUrl}
+                    onChange={handleChange}
+                  />
+                </FormControl>
+              </VStack>
+            </Box>
           </Box>
 
           {/* Other Sections */}
@@ -183,7 +324,7 @@ export default function ModifyEvent() {
                 fontFamily="'Lato', Helvetica"
                 fontWeight={700}
                 fontSize="32px"
-                color="black"
+                color="white"
               >
                 {section.title}
               </Heading>
@@ -194,25 +335,25 @@ export default function ModifyEvent() {
                   <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
                     {/* Date Card */}
                     <Box
-                      bg="#f5f1ff"
+                      bg="#e6f0ff"
                       borderRadius="28px"
                       borderWidth="1px"
-                      borderColor="#cac4d0"
+                      borderColor="#b7c9e6"
                       overflow="hidden"
                     >
                       <Box
                         borderBottomWidth="1px"
-                        borderColor="#cac4d0"
+                        borderColor="#b7c9e6"
                         p={6}
                       >
                         <VStack align="stretch" spacing={4}>
                           <Text
                             fontSize="14px"
                             fontWeight={500}
-                            color="#625b71"
+                            color="#5b6b82"
                             fontFamily="'Inter', Helvetica"
                           >
-                            Select date
+                            Select date and time
                           </Text>
                           <HStack justify="space-between">
                             <Text
@@ -220,21 +361,8 @@ export default function ModifyEvent() {
                               fontWeight={500}
                               color="#1c1b1f"
                             >
-                              Enter date
+                              Event date & time
                             </Text>
-                            <IconButton
-                              aria-label="Open date picker"
-                              variant="ghost"
-                              size="sm"
-                              icon={
-                                <Image
-                                  src="https://c.animaapp.com/mifbvir6JSInmQ/img/icon-1.svg"
-                                  alt="Calendar icon"
-                                  w="24px"
-                                  h="24px"
-                                />
-                              }
-                            />
                           </HStack>
                         </VStack>
                       </Box>
@@ -246,39 +374,42 @@ export default function ModifyEvent() {
                             top="-12px"
                             left="12px"
                             px={1}
-                            bg="#f5f1ff"
+                            bg="#e6f0ff"
                             fontSize="12px"
-                            color="#6750a4"
+                            color="#1f49b6"
                           >
-                            Date
+                            Date & Time
                           </FormLabel>
                           <Input
-                            placeholder="mm/dd/yyyy"
+                            type="datetime-local"
+                            name="date"
                             h="56px"
                             borderWidth="2px"
-                            borderColor="#6750a4"
+                            borderColor="#1f49b6"
                             bg="white"
                             fontFamily="'Inter', Helvetica"
+                            value={form.date}
+                            onChange={handleChange}
                           />
                         </FormControl>
                       </Box>
                     </Box>
 
-                    {/* Time Card */}
+                    {/* Time Card (visual) */}
                     <Box
-                      bg="#f5f1ff"
+                      bg="#e6f0ff"
                       borderRadius="28px"
                       borderWidth="1px"
-                      borderColor="#cac4d0"
+                      borderColor="#b7c9e6"
                       p={6}
                     >
                       <VStack align="stretch" spacing={5}>
                         <Text
                           fontSize="14px"
                           fontWeight={500}
-                          color="#625b71"
+                          color="#5b6b82"
                         >
-                          Enter time
+                          Enter time (visual)
                         </Text>
 
                         <HStack align="flex-start" spacing={3}>
@@ -292,19 +423,23 @@ export default function ModifyEvent() {
                               gap={1}
                               px={4}
                               py={2}
-                              bg="#eaddff"
+                              bg="#d0e2ff"
                               borderRadius="lg"
                               borderWidth="2px"
-                              borderColor="#6750a4"
+                              borderColor="#1f49b6"
                             >
-                              <Text fontSize="32px" fontWeight="600">
+                              <Text
+                                fontSize="32px"
+                                fontWeight="600"
+                                color="#0d2a73"
+                              >
                                 20
                               </Text>
-                              <Box w="2px" h="42px" bg="#6750a4" />
+                              <Box w="2px" h="42px" bg="#1f49b6" />
                             </Flex>
                             <Text
                               fontSize="12px"
-                              color="#625b71"
+                              color="#5b6b82"
                               textAlign="center"
                             >
                               Hour
@@ -318,7 +453,9 @@ export default function ModifyEvent() {
                             h="72px"
                             w="24px"
                           >
-                            <Text fontSize="40px">:</Text>
+                            <Text fontSize="40px" color="white">
+                              :
+                            </Text>
                           </Flex>
 
                           {/* Minutes */}
@@ -330,16 +467,20 @@ export default function ModifyEvent() {
                               justify="center"
                               px={4}
                               py={2}
-                              bg="#f5f1ff"
+                              bg="#e6f0ff"
                               borderRadius="lg"
                             >
-                              <Text fontSize="32px" fontWeight="600">
+                              <Text
+                                fontSize="32px"
+                                fontWeight="600"
+                                color="#0d2a73"
+                              >
                                 00
                               </Text>
                             </Flex>
                             <Text
                               fontSize="12px"
-                              color="#625b71"
+                              color="#5b6b82"
                               textAlign="center"
                             >
                               Minute
@@ -353,17 +494,21 @@ export default function ModifyEvent() {
                             borderRadius="lg"
                             overflow="hidden"
                             borderWidth="1px"
-                            borderColor="#79747e"
+                            borderColor="#b7c9e6"
                           >
                             <Flex
                               h="50%"
                               align="center"
                               justify="center"
-                              bg="#e8def8"
+                              bg="#d0e2ff"
                               borderBottomWidth="1px"
-                              borderColor="#79747e"
+                              borderColor="#b7c9e6"
                             >
-                              <Text fontSize="14px" fontWeight="500" color="#381e72">
+                              <Text
+                                fontSize="14px"
+                                fontWeight="500"
+                                color="#0d2a73"
+                              >
                                 AM
                               </Text>
                             </Flex>
@@ -375,47 +520,31 @@ export default function ModifyEvent() {
                               <Text
                                 fontSize="14px"
                                 fontWeight="500"
-                                color="#625b71"
+                                color="#5b6b82"
                               >
                                 PM
                               </Text>
                             </Flex>
                           </Box>
                         </HStack>
-
-                        <Flex justify="flex-start">
-                          <IconButton
-                            aria-label="More time options"
-                            variant="ghost"
-                            borderRadius="full"
-                            icon={
-                              <Image
-                                src="https://c.animaapp.com/mifbvir6JSInmQ/img/icon.svg"
-                                alt="Clock icon"
-                                w="24px"
-                                h="24px"
-                              />
-                            }
-                          />
-                        </Flex>
                       </VStack>
                     </Box>
 
-                    {/* Duration Card */}
+                    {/* Duration Card (visual) */}
                     <Box
-                      bg="#f5f1ff"
+                      bg="#e6f0ff"
                       borderRadius="28px"
                       borderWidth="1px"
-                      borderColor="#cac4d0"
+                      borderColor="#b7c9e6"
                       p={6}
                     >
                       <VStack align="stretch" spacing={5}>
                         <Text
                           fontSize="14px"
                           fontWeight={500}
-                          color="#625b71"
+                          color="#5b6b82"
                         >
-                          Enter Duration
+                          Enter Duration (visual)
                         </Text>
 
                         <HStack align="flex-start" spacing={3}>
@@ -429,19 +558,23 @@ export default function ModifyEvent() {
                               gap={1}
                               px={4}
                               py={2}
-                              bg="#eaddff"
+                              bg="#d0e2ff"
                               borderRadius="lg"
                               borderWidth="2px"
-                              borderColor="#6750a4"
+                              borderColor="#1f49b6"
                             >
-                              <Text fontSize="32px" fontWeight="600">
-                                20
+                              <Text
+                                fontSize="32px"
+                                fontWeight="600"
+                                color="#0d2a73"
+                              >
+                                01
                               </Text>
-                              <Box w="2px" h="42px" bg="#6750a4" />
+                              <Box w="2px" h="42px" bg="#1f49b6" />
                             </Flex>
                             <Text
                               fontSize="12px"
-                              color="#625b71"
+                              color="#5b6b82"
                               textAlign="center"
                             >
                               Hour
@@ -455,7 +588,9 @@ export default function ModifyEvent() {
                             h="72px"
                             w="24px"
                           >
-                            <Text fontSize="40px">:</Text>
+                            <Text fontSize="40px" color="white">
+                              :
+                            </Text>
                           </Flex>
 
                           {/* Minutes */}
@@ -467,38 +602,26 @@ export default function ModifyEvent() {
                               justify="center"
                               px={4}
                               py={2}
-                              bg="#f5f1ff"
+                              bg="#e6f0ff"
                               borderRadius="lg"
                             >
-                              <Text fontSize="32px" fontWeight="600">
-                                00
+                              <Text
+                                fontSize="32px"
+                                fontWeight="600"
+                                color="#0d2a73"
+                              >
+                                30
                               </Text>
                             </Flex>
                             <Text
                               fontSize="12px"
-                              color="#625b71"
+                              color="#5b6b82"
                               textAlign="center"
                             >
                               Minute
                             </Text>
                           </VStack>
                         </HStack>
-
-                        <Flex justify="flex-start">
-                          <IconButton
-                            aria-label="More duration options"
-                            variant="ghost"
-                            borderRadius="full"
-                            icon={
-                              <Image
-                                src="https://c.animaapp.com/mifbvir6JSInmQ/img/icon.svg"
-                                alt="Clock icon"
-                                w="24px"
-                                h="24px"
-                              />
-                            }
-                          />
-                        </Flex>
                       </VStack>
                     </Box>
                   </SimpleGrid>
@@ -510,20 +633,23 @@ export default function ModifyEvent() {
                         fontFamily="'Inter', Helvetica"
                         fontWeight={400}
                         fontSize="20px"
-                        color="#1e1e1e"
+                        color="white"
                       >
                         Location
                       </FormLabel>
                       <Input
+                        name="location"
                         placeholder="Address"
-                        bg="#e6e6e6"
-                        borderColor="#d9d9d9"
+                        bg="#e6f0ff"
+                        borderColor="#b7c9e6"
                         borderWidth="1.6px"
                         borderRadius="10px"
                         px="24px"
                         py="18px"
                         fontFamily="'Inter', Helvetica"
                         fontSize="18px"
+                        value={form.location}
+                        onChange={handleChange}
                       />
                     </FormControl>
                   </Box>
@@ -534,7 +660,7 @@ export default function ModifyEvent() {
               {section.title === "Forms" && (
                 <Box
                   maxW="331px"
-                  bg="#ece6f0"
+                  bg="#e6f0ff"
                   borderRadius="20px"
                   boxShadow="0px 4px 4px rgba(0,0,0,0.25)"
                   p={6}
@@ -545,7 +671,7 @@ export default function ModifyEvent() {
                         fontFamily="'Inter', Helvetica"
                         fontWeight={400}
                         fontSize="18px"
-                        color="#1e1e1e"
+                        color="#0d2a73"
                       >
                         Upload Volunteer Forms
                       </FormLabel>
@@ -580,7 +706,7 @@ export default function ModifyEvent() {
                   {/* Notification Message */}
                   <Box
                     maxW="323px"
-                    bg="#ece6f0"
+                    bg="#e6f0ff"
                     borderRadius="20px"
                     boxShadow="0px 4px 4px rgba(0,0,0,0.25)"
                     p={6}
@@ -590,19 +716,22 @@ export default function ModifyEvent() {
                         fontFamily="'Inter', Helvetica"
                         fontWeight={400}
                         fontSize="16px"
-                        color="#1e1e1e"
+                        color="#0d2a73"
                       >
                         Notification Message
                       </FormLabel>
                       <Box position="relative">
                         <Textarea
+                          name="notifMessage"
                           placeholder="Describe your event"
                           minH="80px"
                           resize="none"
-                          bg="#e6e6e6"
-                          borderColor="#d9d9d9"
+                          bg="white"
+                          borderColor="#b7c9e6"
                           fontFamily="'Inter', Helvetica"
                           fontSize="16px"
+                          value={form.notifMessage}
+                          onChange={handleChange}
                         />
                         <Image
                           src="https://c.animaapp.com/mifbvir6JSInmQ/img/drag.svg"
@@ -617,22 +746,22 @@ export default function ModifyEvent() {
                     </FormControl>
                   </Box>
 
-                  {/* When to send notification */}
+                  {/* When to send notification (visual only for now) */}
                   <Box
                     maxW="328px"
-                    bg="#f5f1ff"
+                    bg="#e6f0ff"
                     borderRadius="28px"
                     borderWidth="1px"
-                    borderColor="#cac4d0"
+                    borderColor="#b7c9e6"
                     p={6}
                   >
                     <VStack align="stretch" spacing={5}>
                       <Text
                         fontSize="14px"
                         fontWeight={500}
-                        color="#625b71"
+                        color="#5b6b82"
                       >
-                        Send notification how long before event?
+                        Send notification how long before event? (visual)
                       </Text>
 
                       <HStack align="flex-start" spacing={3}>
@@ -646,19 +775,23 @@ export default function ModifyEvent() {
                             gap={1}
                             px={4}
                             py={2}
-                            bg="#eaddff"
+                            bg="#d0e2ff"
                             borderRadius="lg"
                             borderWidth="2px"
-                            borderColor="#6750a4"
+                            borderColor="#1f49b6"
                           >
-                            <Text fontSize="32px" fontWeight="600">
+                            <Text
+                              fontSize="32px"
+                              fontWeight="600"
+                              color="#0d2a73"
+                            >
                               00
                             </Text>
-                            <Box w="2px" h="42px" bg="#6750a4" />
+                            <Box w="2px" h="42px" bg="#1f49b6" />
                           </Flex>
                           <Text
                             fontSize="12px"
-                            color="#625b71"
+                            color="#5b6b82"
                             textAlign="center"
                           >
                             Hour
@@ -672,7 +805,9 @@ export default function ModifyEvent() {
                           h="72px"
                           w="24px"
                         >
-                          <Text fontSize="40px">:</Text>
+                          <Text fontSize="40px" color="white">
+                            :
+                          </Text>
                         </Flex>
 
                         {/* Minutes */}
@@ -684,38 +819,26 @@ export default function ModifyEvent() {
                             justify="center"
                             px={4}
                             py={2}
-                            bg="#f5f1ff"
+                            bg="#e6f0ff"
                             borderRadius="lg"
                           >
-                            <Text fontSize="32px" fontWeight="600">
+                            <Text
+                              fontSize="32px"
+                              fontWeight="600"
+                              color="#0d2a73"
+                            >
                               30
                             </Text>
                           </Flex>
                           <Text
                             fontSize="12px"
-                            color="#625b71"
+                            color="#5b6b82"
                             textAlign="center"
                           >
                             Minute
                           </Text>
                         </VStack>
                       </HStack>
-
-                      <Flex justify="flex-start">
-                        <IconButton
-                          aria-label="More notification options"
-                          variant="ghost"
-                          borderRadius="full"
-                          icon={
-                            <Image
-                              src="https://c.animaapp.com/mifbvir6JSInmQ/img/icon.svg"
-                              alt="Bell icon"
-                              w="24px"
-                              h="24px"
-                            />
-                          }
-                        />
-                      </Flex>
                     </VStack>
                   </Box>
                 </Stack>
@@ -725,6 +848,7 @@ export default function ModifyEvent() {
 
           {/* Submit Button */}
           <Button
+            type="submit"
             px="54px"
             py="40px"
             h="auto"
@@ -732,6 +856,7 @@ export default function ModifyEvent() {
             borderRadius="22px"
             boxShadow="inset 0px -2px 2px 2px rgba(51, 34, 170, 0.25), inset 0px 2px 2px 2px rgba(255, 255, 255, 0.25), inset 0px 0px 0px 2px #4834d4, 0px 2px 4px rgba(19, 13, 61, 0.25)"
             _hover={{ bg: "#1a1f7a" }}
+            isLoading={loading}
           >
             <Box
               as="span"
@@ -747,6 +872,5 @@ export default function ModifyEvent() {
         </VStack>
       </Container>
     </Box>
-    
   );
 }

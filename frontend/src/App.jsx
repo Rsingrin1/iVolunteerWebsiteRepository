@@ -12,6 +12,7 @@ import Login from "./pages/Login.jsx";
 import VolunteerSignUp from "./pages/VolunteerSignUp.jsx";
 import LandingPage from "./pages/landingPage.jsx";
 import OrganizerSignUp from "./pages/OrganizerSignUp.jsx";
+import EventsCalendar from "./pages/EventsCalendar";
 
 
 
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="/getUserByID/:id" element={<GetUserByID/>} />
         <Route path="/landingPage" element={<LandingPage/>} />
         <Route path="/OrganizerSignUp" element={<OrganizerSignUp />} />
+        <Route path="/calendar" element={<EventsCalendar />} />
       </Routes>
   );
 }

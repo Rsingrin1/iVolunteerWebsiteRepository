@@ -11,6 +11,7 @@ import {
   Alert,
   AlertIcon,
 } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 
 export default function InputUser() {
   const [username, setUsername] = useState("");
@@ -20,6 +21,7 @@ export default function InputUser() {
   const [error, setError] = useState(null);
 
   const API_BASE = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,58 +33,122 @@ export default function InputUser() {
       return;
     }
 
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+      });
+
+      let data = null;
+      const contentType = res.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        try {
+          data = await res.json();
+        } catch {
+          data = null;
+        }
+      }
+
+      if (!res.ok) {
+        setError(
+          (data && (data.message || data.errorMessage)) ||
+            `Login failed with status ${res.status}`
+        );
+        return;
+      }
+
+      // Expect: { message, token, user: { id, username, email, userType } }
+      if (!data || !data.token || !data.user) {
+        setError("Unexpected login response from server.");
+        return;
+      }
+
+      // Save auth info for later (events, etc.)
+      localStorage.setItem("authToken", data.token);
+      localStorage.setItem("currentUser", JSON.stringify(data.user));
+
+      if (data.user.userType === "organizer") {
+        localStorage.setItem("organizerId", data.user.id);
+      } else {
+        localStorage.removeItem("organizerId");
+      }
+
+      setMessage(data.message || "Login successful.");
+
+      // Optional navigation based on role
+      if (data.user.userType === "organizer") {
+        navigate("/MyEventsOrganizer");
+      } else {
+        navigate("/landingPage"); // or EventsCalendar, etc.
+      }
+    } catch (err) {
+      setError(err.message || "Network error during login.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Box p={6} maxW="720px" mx="auto">
-        <Heading as="h2" size="lg" mb={6} textAlign="center">
-        </Heading>
-        <Box p={6} maxW="480px" mx="auto">
+      <Heading as="h2" size="lg" mb={6} textAlign="center">
+        {/* you can put a subtitle here if you want */}
+      </Heading>
+      <Box p={6} maxW="480px" mx="auto">
         <Heading as="h2" size="lg" mb={4} textAlign="center">
-            Login
+          Login
         </Heading>
 
         {message && (
-            <Alert status="success" mb={4} borderRadius="md">
+          <Alert status="success" mb={4} borderRadius="md">
             <AlertIcon />
             <Text>{message}</Text>
-            </Alert>
+          </Alert>
         )}
 
         {error && (
-            <Alert status="error" mb={4} borderRadius="md">
+          <Alert status="error" mb={4} borderRadius="md">
             <AlertIcon />
             <Text>{error}</Text>
-            </Alert>
+          </Alert>
         )}
 
         <VStack as="form" spacing={4} onSubmit={handleSubmit}>
-            <FormControl>
+          <FormControl>
             <FormLabel>Username</FormLabel>
             <Input
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Username"
-                bg="white"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Username"
+              bg="white"
             />
-            </FormControl>
+          </FormControl>
 
-            <FormControl>
+          <FormControl>
             <FormLabel>Password</FormLabel>
             <Input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password"
-                type="password"
-                bg="white"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              type="password"
+              bg="white"
             />
-            </FormControl>
+          </FormControl>
 
-            <Button type="submit" isLoading={loading} w="full" colorScheme="blue">
+          <Button
+            type="submit"
+            isLoading={loading}
+            w="full"
+            colorScheme="blue"
+          >
             Submit
-            </Button>
+          </Button>
         </VStack>
-        </Box>
+      </Box>
     </Box>
-    );
+  );
 }
