@@ -35,6 +35,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import bcrypt from "bcrypt";
+import nodemailer from "nodemailer";
 
 import { connectDB } from "./config/db.js";
 import userRoute from "./routes/userRoute.js";
@@ -89,3 +90,30 @@ app.post("/Login", async (req, res) => {
     res.status(200).json({ message: 'Login successful' });
     console.log('Login successful');
 });
+
+//nodemailer api
+const transporter = nodemailer.createTransport({
+    host: process.env.GMAIL_HOST,
+    port: 587,
+    secure: false,
+    auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS
+    }
+});
+
+const mailOptions = {
+    from: process.env.GMAIL_USER,
+    to: 'rhysunior@gmail.com', //send to our test gmail
+    subject: 'Node.js mail',
+    text: 'sample text'
+};
+
+transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+        console.error('send mail error', error);
+    }
+    else {
+        console.log('Email sent: ', info.response);
+    }
+}); //node server.js */
