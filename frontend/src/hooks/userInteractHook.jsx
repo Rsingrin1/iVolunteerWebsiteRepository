@@ -16,27 +16,39 @@ export default function useUser(id) {
   };
 
   const [user, setUser] = useState(initialState);
+  const token = localStorage.getItem("authToken");
 
   const inputHandler = (e) => {
     const { name, value } = e.target;
     setUser({ ...user, [name]: value });
   };
 
-  // fetch user by ID
+  // fetch user by ID from token
   useEffect(() => {
-    if (!id) return;
+    if (!token) return; // Don't fetch if no token
 
     axios
-      .get(`http://localhost:5000/api/user/${id}`)
+      .get(`http://localhost:5000/api/user`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       .then((res) => setUser(res.data))
-      .catch((err) => console.error(err));
-  }, [id]);
+      .catch((err) => {
+        console.error("Error fetching user:", err.response?.status, err.message);
+      });
+  }, [token]); // Only depend on token
 
   // update user
   const updateUser = async () => {
     return axios.put(
-      `http://localhost:5000/api/update/user/${id}`,
-      user
+      `http://localhost:5000/api/user`,
+      user,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
   };
 

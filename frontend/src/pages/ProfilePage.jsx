@@ -18,7 +18,7 @@ import useUser from "../hooks/userInteractHook.jsx";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const id = JSON.parse(localStorage.getItem("currentUser"))?.id;
   const { user, inputHandler, updateUser } = useUser(id);
 
   const submitForm = async (e) => {

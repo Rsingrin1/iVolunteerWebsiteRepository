@@ -6,30 +6,32 @@ import {
   Flex,
   Heading,
   Text,
-  Button,
-  Avatar,
   Image,
   SimpleGrid,
   useColorModeValue,
   Container,
 } from "@chakra-ui/react";
 
-// Use the actual little icons you had before
+import ProfileMenu from "../assets/profileMenu.jsx";
+
 const dashboardCards = [
   {
     title: "Create Event",
     description: "Organize a volunteer event and invite others to participate.",
-    imageSrc: "https://c.animaapp.com/misabfpcBGwY1T/img/image-11.png", // plus icon
+    imageSrc: "https://c.animaapp.com/misabfpcBGwY1T/img/image-11.png",
+    route: "/modifyEvent",          // 👈 goes to modifyEvent.jsx
   },
   {
     title: "My Events",
     description: "View and manage your upcoming volunteer events.",
-    imageSrc: "https://c.animaapp.com/misabfpcBGwY1T/img/image-9.png", // list icon
+    imageSrc: "https://c.animaapp.com/misabfpcBGwY1T/img/image-9.png",
+    route: "/MyEventsOrganizer",    // 👈 goes to MyEventsOrganizer.jsx
   },
   {
     title: "Calendar",
     description: "See your upcoming volunteer events and stay organized.",
-    imageSrc: "https://c.animaapp.com/misabfpcBGwY1T/img/image-8.png", // calendar icon
+    imageSrc: "https://c.animaapp.com/misabfpcBGwY1T/img/image-8.png",
+    route: "/MyEventsOrganizer",    // 👈 temporarily reuse MyEventsOrganizer
   },
 ];
 
@@ -40,21 +42,11 @@ const OrganizerDashboard = () => {
   return (
     <Box bg="white" w="100%" minH="100vh">
       {/* NAVBAR */}
-      <Flex justify="flex-end" align="center" p={6} gap={4}>
-        <Button
-          as={RouterLink}
-          to="/OrganizerDashboard"
-          h="auto"
-          bg="gray.900"
-          color="white"
-          _hover={{ bg: "gray.800" }}
-        >
-          Home
-        </Button>
-
-        <Avatar
-          size="lg"
-          src="https://c.animaapp.com/misabfpcBGwY1T/img/shape.png"
+      <Flex justify="flex-end" align="center" p={6}>
+        <ProfileMenu
+          userName="John Doe"
+          profilePic="https://c.animaapp.com/misabfpcBGwY1T/img/shape.png"
+          onLogout={() => console.log("Logged out")}
         />
       </Flex>
 
@@ -68,7 +60,6 @@ const OrganizerDashboard = () => {
           Your Gateway to Doing Good.
         </Text>
 
-        {/* Center illustration */}
         <Image
           mt={10}
           w="180px"
@@ -79,12 +70,14 @@ const OrganizerDashboard = () => {
         />
       </Flex>
 
-      {/* MAIN CONTENT — CENTERED */}
+      {/* MAIN CONTENT */}
       <Container maxW="6xl" mt={20}>
         <SimpleGrid columns={{ base: 1, md: 3 }} spacing={12}>
           {dashboardCards.map((card, index) => (
             <Box
               key={index}
+              as={RouterLink}
+              to={card.route}
               bg={cardBg}
               border="1px solid"
               borderColor={cardBorder}
@@ -93,8 +86,8 @@ const OrganizerDashboard = () => {
               textAlign="center"
               _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
               transition="0.2s ease"
+              textDecoration="none"
             >
-              {/* LITTLE ICON, CENTERED & ALIGNED */}
               <Flex
                 w="100%"
                 h="150px"

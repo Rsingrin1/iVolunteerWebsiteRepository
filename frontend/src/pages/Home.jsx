@@ -28,22 +28,13 @@ function App() {
         </p>
       </div>
       <p className="read-the-docs">
-        <Link to="/About">Go to About Page</Link>
-      </p>
-      <p className="read-the-docs">
         <Link to="/exampleMongoHookup">Go to Example Mongo Hookup Page</Link>
       </p>
       <p className="read-the-docs">
-        <Link to="/Profile/6931f481110e34c9588001b0">Go to Profile Page</Link>
-      </p>
-      <p className="read-the-docs">
-        <Link to="/userInput">add a user!</Link>
+        <Link to="/Profile">Go to Profile Page</Link>
       </p>
       <p className="read-the-docs">
        <Link to="/MyEventsOrganizer">MyEventsOrganizer</Link>
-      </p>
-      <p className="read-the-docs">
-      <Link to="/getUserByID/6931f481110e34c9588001b0">Get User By ID</Link>
       </p>
       <p className="read-the-docs">
       <Link to="/landingPage">landingPage</Link>
@@ -66,6 +57,9 @@ function App() {
       
       <p className="read-the-docs">
       <Link to="/OrganizerDashboard">OrganizerDashboard</Link>
+      </p>
+      <p className="read-the-docs">
+        <Link to="/calendar">Events Calendar</Link>
       </p>
     </>
   )
