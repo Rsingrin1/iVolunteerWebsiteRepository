@@ -5,33 +5,33 @@
 
 import User from "../model/userModel.js";
 import bcrypt from 'bcrypt';
+import jwt from "jsonwebtoken";
 
-//function to create new user instance
-export const create = async(req, res) =>{
-    try{
-        
-        //HASH PASSWORD
-        console.log('password:', req.body.hash);
-        const password = req.body.hash;
-        const hash = await bcrypt.hash(password,13);
-        console.log('hash:', hash);
-        req.body.hash = hash;
 
-        const newUser = new User(req.body); //req.body --> sending info from client to server
-        const {username,email} = newUser;
-        const userExist = await User.findOne({username}) || await User.findOne({email}); //define condition to check validity
-        if(userExist){
-            return res.status(400).json({message: "User already exists."});
-        }
+// function to create new user instance
+export const create = async (req, res) => {
+  try {
+    // HASH PASSWORD
+    console.log("password:", req.body.hash);
+    const password = req.body.hash;
+    const hash = await bcrypt.hash(password, 13);
+    console.log("hash:", hash);
+    req.body.hash = hash;
 
-        const savedData = await newUser.save();
-        res.status(200).json(savedData);
-
-    } catch (error) {
-        res.status(500).json({errorMessage:error.message});
+    const newUser = new User(req.body); // req.body --> sending info from client to server
+    const { username, email } = newUser;
+    const userExist =
+      (await User.findOne({ username })) || (await User.findOne({ email })); // define condition to check validity
+    if (userExist) {
+      return res.status(400).json({ message: "User already exists." });
     }
-}
 
+    const savedData = await newUser.save();
+    res.status(200).json(savedData);
+  } catch (error) {
+    res.status(500).json({ errorMessage: error.message });
+  }
+};
 
 export const getAllUsers = async (req, res) => {
   try {
@@ -45,26 +45,29 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-
-
-export const getUserById = async(req, res) =>{
-    try{
-        const id = req.params.id;
-        const userExist = await User.findById(id);
-        if(!userExist){
-            return res.status(400).json({message: "User not found."});
-        }
-        res.status(200).json(userExist);
-
-    } catch (error) {
-        res.status(500).json({errorMessage:error.message});
+export const getUserById = async (req, res) => {
+  try {
+    const id = req.user.id;
+    if (!id) {
+      return res.status(401).json({ message: "User not authenticated." });
     }
-}
+    const userExist = await User.findById(id);
+    if (!userExist) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    res.status(200).json(userExist);
+  } catch (error) {
+    res.status(500).json({ errorMessage: error.message });
+  }
+};
 
 
 export const update = async (req, res) => {
   try {
-    const id = req.params.id;
+    const id = req.user.id;
+    if (!id) {
+      return res.status(401).json({ message: "User not authenticated." });
+    }
     const userExist = await User.findById(id);
     if (!userExist) {
       return res.status(404).json({ message: "User not found." });
@@ -72,7 +75,7 @@ export const update = async (req, res) => {
     const updatedData = await User.findByIdAndUpdate(id, req.body, {
       new: true,
     });
-    res.status(200).json({ message: "User Updated successfully." });
+    res.status(200).json({ message: "User Updated successfully.", user: updatedData });
   } catch (error) {
     res.status(500).json({ errorMessage: error.message });
   }
@@ -80,13 +83,71 @@ export const update = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   try {
-    const id = req.params.id;
+    const id = req.user.id;
+    if (!id) {
+      return res.status(401).json({ message: "User not authenticated." });
+    }
     const userExist = await User.findById(id);
     if (!userExist) {
       return res.status(404).json({ message: "User not found." });
     }
     await User.findByIdAndDelete(id);
     res.status(200).json({ message: "User deleted successfully." });
+  } catch (error) {
+    res.status(500).json({ errorMessage: error.message });
+  }
+};
+
+// ⬇️ NEW: login controller
+export const login = async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    // require (username OR email) + password
+    if ((!username && !email) || !password) {
+      return res
+        .status(400)
+        .json({ message: "Username or email and password are required." });
+    }
+
+    // find user by username or email
+    const user = username
+      ? await User.findOne({ username })
+      : await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials." });
+    }
+
+    // compare plain password with stored hash
+    const isMatch = await bcrypt.compare(password, user.hash);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials." });
+    }
+
+    // payload for token (keep it light)
+    const payload = {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      userType: user.userType,
+    };
+
+    // sign JWT
+    const token = jwt.sign(
+      payload,
+      process.env.JWT_SECRET || "dev_secret_key_change_me",
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    // respond with token + basic user info
+    res.status(200).json({
+      message: "Login successful.",
+      token,
+      user: payload,
+    });
   } catch (error) {
     res.status(500).json({ errorMessage: error.message });
   }
