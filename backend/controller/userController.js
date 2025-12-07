@@ -7,6 +7,7 @@ import User from "../model/userModel.js";
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
 
+
 // function to create new user instance
 export const create = async (req, res) => {
   try {
@@ -46,10 +47,13 @@ export const getAllUsers = async (req, res) => {
 
 export const getUserById = async (req, res) => {
   try {
-    const id = req.params.id;
+    const id = req.user.id;
+    if (!id) {
+      return res.status(401).json({ message: "User not authenticated." });
+    }
     const userExist = await User.findById(id);
     if (!userExist) {
-      return res.status(400).json({ message: "User not found." });
+      return res.status(404).json({ message: "User not found." });
     }
     res.status(200).json(userExist);
   } catch (error) {
@@ -57,9 +61,13 @@ export const getUserById = async (req, res) => {
   }
 };
 
+
 export const update = async (req, res) => {
   try {
-    const id = req.params.id;
+    const id = req.user.id;
+    if (!id) {
+      return res.status(401).json({ message: "User not authenticated." });
+    }
     const userExist = await User.findById(id);
     if (!userExist) {
       return res.status(404).json({ message: "User not found." });
@@ -67,7 +75,7 @@ export const update = async (req, res) => {
     const updatedData = await User.findByIdAndUpdate(id, req.body, {
       new: true,
     });
-    res.status(200).json({ message: "User Updated successfully." });
+    res.status(200).json({ message: "User Updated successfully.", user: updatedData });
   } catch (error) {
     res.status(500).json({ errorMessage: error.message });
   }
@@ -75,7 +83,10 @@ export const update = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   try {
-    const id = req.params.id;
+    const id = req.user.id;
+    if (!id) {
+      return res.status(401).json({ message: "User not authenticated." });
+    }
     const userExist = await User.findById(id);
     if (!userExist) {
       return res.status(404).json({ message: "User not found." });

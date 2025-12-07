@@ -31,7 +31,7 @@ function App() {
         <Link to="/exampleMongoHookup">Go to Example Mongo Hookup Page</Link>
       </p>
       <p className="read-the-docs">
-        <Link to="/Profile/6931f481110e34c9588001b0">Go to Profile Page</Link>
+        <Link to="/Profile">Go to Profile Page</Link>
       </p>
       <p className="read-the-docs">
        <Link to="/MyEventsOrganizer">MyEventsOrganizer</Link>

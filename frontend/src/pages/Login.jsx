@@ -80,12 +80,9 @@ export default function InputUser() {
 
       setMessage(data.message || "Login successful.");
 
-      // Optional navigation based on role
-      if (data.user.userType === "organizer") {
-        navigate("/MyEventsOrganizer");
-      } else {
-        navigate("/landingPage"); // or EventsCalendar, etc.
-      }
+      navigate("/Profile");
+
+
     } catch (err) {
       setError(err.message || "Network error during login.");
     } finally {
