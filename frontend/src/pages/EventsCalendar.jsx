@@ -5,12 +5,13 @@ import {
   Text,
   Container,
   Spinner,
-  Center,
   VStack,
   Card,
   CardBody,
   Badge,
   HStack,
+  SimpleGrid,
+  Image,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import BackArrow from "../assets/backArrow";
@@ -60,7 +61,7 @@ export default function EventsCalendar() {
           return;
         }
 
-        // Group by date
+        // Group by date (YYYY-MM-DD)
         const map = new Map();
         data.forEach((event) => {
           if (!event.date) return;
@@ -139,6 +140,7 @@ export default function EventsCalendar() {
         <VStack spacing={10} align="stretch">
           {eventsByDate.map(({ dateKey, events }) => (
             <Box key={dateKey}>
+              {/* Date header */}
               <Text
                 color="white"
                 fontSize="32px"
@@ -149,17 +151,36 @@ export default function EventsCalendar() {
                 {formatDateHeader(dateKey)}
               </Text>
 
-              <VStack spacing={4} align="stretch">
+              {/* Grid of event cards for this day */}
+              <SimpleGrid
+                columns={{ base: 1, md: 2, lg: 3 }}
+                spacing={6}
+                alignItems="stretch"
+              >
                 {events.map((event) => (
                   <Card
                     key={event._id}
                     borderWidth="1px"
                     borderColor="#d9d9d9"
                     bg="white"
+                    h="100%"
                   >
                     <CardBody>
-                      <HStack justify="space-between" align="flex-start">
-                        <Box>
+                      <HStack align="flex-start" spacing={4}>
+                        {/* Event image thumbnail */}
+                        <Image
+                          src={
+                            event.imageUrl ||
+                            "https://via.placeholder.com/96x96.png?text=Event"
+                          }
+                          alt={event.name}
+                          boxSize="72px"
+                          objectFit="cover"
+                          borderRadius="md"
+                          flexShrink={0}
+                        />
+
+                        <Box flex="1">
                           <Heading
                             as="h3"
                             size="sm"
@@ -170,7 +191,7 @@ export default function EventsCalendar() {
                             {event.name}
                           </Heading>
 
-                          <Text color="#444" fontSize="14px">
+                          <Text color="#444" fontSize="14px" noOfLines={3}>
                             {event.description || "No description provided."}
                           </Text>
 
@@ -179,38 +200,38 @@ export default function EventsCalendar() {
                               Location: {event.location}
                             </Text>
                           )}
+
+                          <HStack justify="space-between" mt={3}>
+                            <Badge
+                              colorScheme="purple"
+                              fontSize="0.8rem"
+                              borderRadius="full"
+                            >
+                              {formatTime(event.date)}
+                            </Badge>
+
+                            {event.tags?.length > 0 && (
+                              <HStack spacing={1} flexWrap="wrap">
+                                {event.tags.map((tag, idx) => (
+                                  <Badge
+                                    key={idx}
+                                    variant="subtle"
+                                    colorScheme="gray"
+                                    fontSize="0.65rem"
+                                    borderRadius="full"
+                                  >
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </HStack>
+                            )}
+                          </HStack>
                         </Box>
-
-                        <VStack spacing={1} align="flex-end">
-                          <Badge
-                            colorScheme="purple"
-                            fontSize="0.8rem"
-                            borderRadius="full"
-                          >
-                            {formatTime(event.date)}
-                          </Badge>
-
-                          {event.tags?.length > 0 && (
-                            <HStack spacing={1} flexWrap="wrap">
-                              {event.tags.map((tag, idx) => (
-                                <Badge
-                                  key={idx}
-                                  variant="subtle"
-                                  colorScheme="gray"
-                                  fontSize="0.65rem"
-                                  borderRadius="full"
-                                >
-                                  {tag}
-                                </Badge>
-                              ))}
-                            </HStack>
-                          )}
-                        </VStack>
                       </HStack>
                     </CardBody>
                   </Card>
                 ))}
-              </VStack>
+              </SimpleGrid>
             </Box>
           ))}
         </VStack>
