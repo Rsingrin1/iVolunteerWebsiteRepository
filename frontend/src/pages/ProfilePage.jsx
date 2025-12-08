@@ -13,8 +13,9 @@ import {
   VStack,
 } from "@chakra-ui/react";
 
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useUser from "../hooks/userInteractHook.jsx";
+import SiteHeader from "../assets/SiteHeader";   // ✅ NEW IMPORT
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -33,6 +34,11 @@ export default function Profile() {
 
   return (
     <Box bg="white" minH="100vh" w="full">
+
+      {/* ✅ NEW SITE HEADER — minimal addition */}
+      <SiteHeader />
+
+      {/* Existing back button header */}
       <Box as="header" w="full" p={6}>
         <IconButton
           aria-label="Go back"

@@ -19,6 +19,8 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import BackArrow from "../assets/backArrow";
+import SiteHeader from "../assets/SiteHeader";
+
 
 const sectionData = [
   { title: "Time & Location" },
@@ -181,6 +183,8 @@ const authToken = localStorage.getItem("authToken") || null;
 
   return (
     <Box bg="#1f49b6" minH="100vh" w="full" pt={6}>
+      <SiteHeader />
+
       <Container maxW="6xl" px={4} pb={10}>
         <BackArrow />
 

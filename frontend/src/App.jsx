@@ -9,24 +9,32 @@ import Login from "./pages/Login.jsx";
 import VolunteerSignUp from "./pages/VolunteerSignUp.jsx";
 import LandingPage from "./pages/landingPage.jsx";
 import OrganizerSignUp from "./pages/OrganizerSignUp.jsx";
-import EventsCalendar from "./pages/EventsCalendar";
-
+import EventsCalendar from "./pages/EventsCalendar.jsx";
+import EventDetails from "./pages/EventDetails.jsx";   // 🔥 NEW
+import MyEventsVolunteer from "./pages/MyEventsVolunteer.jsx";
+import EventsSearch from "./pages/EventsSearch.jsx";
+import ReviewApplicants from "./pages/ReviewApplicants.jsx";
 
 
 export default function App() {
   return (
-      <Routes>
-        <Route path="/" element={<Home/>} />
-        <Route path="/exampleMongoHookup" element={<ExampleMongoHookup/>} />
-        <Route path="/Profile" element={<Profile/>} />
-        <Route path="/userInput" element={<InputUserPage/>} />
-        <Route path="/modifyEvent" element={<ModifyEvent/>} />
-        <Route path="/Login" element={<Login/>} />
-        <Route path="/MyEventsOrganizer" element={<MyEventsOrganizer/>} />
-        <Route path="/VolunteerSignUp" element={<VolunteerSignUp />} />
-        <Route path="/landingPage" element={<LandingPage/>} />
-        <Route path="/OrganizerSignUp" element={<OrganizerSignUp />} />
-        <Route path="/calendar" element={<EventsCalendar />} />
-      </Routes>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/exampleMongoHookup" element={<ExampleMongoHookup />} />
+      <Route path="/Profile" element={<Profile />} />
+      <Route path="/userInput" element={<InputUserPage />} />
+      <Route path="/modifyEvent" element={<ModifyEvent />} />
+      <Route path="/Login" element={<Login />} />
+      <Route path="/MyEventsOrganizer" element={<MyEventsOrganizer />} />
+      <Route path="/VolunteerSignUp" element={<VolunteerSignUp />} />
+      <Route path="/landingPage" element={<LandingPage />} />
+      <Route path="/OrganizerSignUp" element={<OrganizerSignUp />} />
+      <Route path="/calendar" element={<EventsCalendar />} />
+      <Route path="/MyEventsVolunteer" element={<MyEventsVolunteer />} />
+      <Route path="/events/search" element={<EventsSearch />} />
+      {/* NEW EVENT DETAILS ROUTE */}
+      <Route path="/event/:id" element={<EventDetails />} />
+      <Route path="/event/:id/applicants" element={<ReviewApplicants />} />
+    </Routes>
   );
 }

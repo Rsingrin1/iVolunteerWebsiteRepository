@@ -5,92 +5,130 @@ import {
   Text,
   Container,
   Spinner,
+  SimpleGrid,
   VStack,
   Card,
   CardBody,
   Badge,
   HStack,
-  SimpleGrid,
-  Image,
+  Button,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import BackArrow from "../assets/backArrow";
+import SiteHeader from "../assets/SiteHeader";   // ✅ NEW IMPORT
 
 const API_BASE = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
-function formatDateHeader(dateStr) {
-  const d = new Date(dateStr);
-  return d.toLocaleDateString(undefined, {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function formatTime(dateStr) {
-  const d = new Date(dateStr);
-  return d.toLocaleTimeString([], {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
 export default function EventsCalendar() {
-  const [eventsByDate, setEventsByDate] = useState([]);
+  const navigate = useNavigate();
+
+  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const navigate = useNavigate();
+  // calendar state
+  const today = new Date();
+  const [month, setMonth] = useState(today.getMonth());
+  const [year, setYear] = useState(today.getFullYear());
+
+  // current user (from localStorage)
+  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+  const userId = currentUser?.id;
+  const userType = currentUser?.userType;
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const loadEvents = async () => {
       setLoading(true);
-      setError(null);
       try {
         const res = await fetch(`${API_BASE}/api/events`);
-        let data = await res.json();
+        const data = await res.json();
 
         if (!res.ok) {
           setError(data?.message || "Failed to load events.");
           return;
         }
 
-        if (!Array.isArray(data)) {
-          setEventsByDate([]);
-          return;
-        }
-
-        // Group by date (YYYY-MM-DD)
-        const map = new Map();
-        data.forEach((event) => {
-          if (!event.date) return;
-          const key = new Date(event.date).toISOString().slice(0, 10);
-          if (!map.has(key)) map.set(key, []);
-          map.get(key).push(event);
-        });
-
-        // Sort days + times
-        const grouped = [...map.entries()]
-          .sort(([a], [b]) => a.localeCompare(b))
-          .map(([dateKey, evts]) => ({
-            dateKey,
-            events: evts.sort(
-              (a, b) =>
-                new Date(a.date).getTime() - new Date(b.date).getTime()
-            ),
-          }));
-
-        setEventsByDate(grouped);
-      } catch (err) {
+        setEvents(data || []);
+      } catch {
         setError("Network error while loading events.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchEvents();
+    loadEvents();
   }, []);
+
+  const prevMonth = () => {
+    setMonth((prev) => (prev === 0 ? 11 : prev - 1));
+    setYear((prev) => (month === 0 ? prev - 1 : prev));
+  };
+
+  const nextMonth = () => {
+    setMonth((prev) => (prev === 11 ? 0 : prev + 1));
+    setYear((prev) => (month === 11 ? prev + 1 : prev));
+  };
+
+  const firstDay = new Date(year, month, 1);
+  const startingWeekday = firstDay.getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const calendarCells = [];
+  for (let i = 0; i < startingWeekday; i++) {
+    calendarCells.push(null);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    calendarCells.push(d);
+  }
+
+  // 🔹 Filter events for THIS user only
+  const myEvents = events.filter((ev) => {
+    if (!userId) return false;
+
+    if (userType === "organizer") {
+      const organizerId = ev.organizer?._id || ev.organizer;
+      return organizerId === userId;
+    }
+
+    const applicants = ev.applicants || [];
+    const participants = ev.participants || [];
+    return applicants.includes(userId) || participants.includes(userId);
+  });
+
+  const myEventsThisMonth = myEvents.filter((ev) => {
+    if (!ev.date) return false;
+    const d = new Date(ev.date);
+    return d.getMonth() === month && d.getFullYear() === year;
+  });
+
+  const eventsByDay = {};
+  myEventsThisMonth.forEach((ev) => {
+    const d = new Date(ev.date).getDate();
+    if (!eventsByDay[d]) eventsByDay[d] = [];
+    eventsByDay[d].push(ev);
+  });
+
+  const monthName = new Date(year, month).toLocaleString("default", {
+    month: "long",
+  });
+
+  if (!userId) {
+    return (
+      <Box
+        minH="100vh"
+        bg="#1f49b6"
+        color="white"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        px={4}
+      >
+        <Text fontSize="xl" textAlign="center">
+          Please log in to view your events calendar.
+        </Text>
+      </Box>
+    );
+  }
 
   if (loading) {
     return (
@@ -107,135 +145,96 @@ export default function EventsCalendar() {
   }
 
   return (
-    <Box minH="100vh" bg="#1f49b6" pt={6}>
-      <Container maxW="6xl" px={4} pb={16}>
-        {/* Back Button */}
-        <BackArrow />
+    <>
+      {/* ✅ ONLY CHANGE — Add the global header */}
+      <SiteHeader />
 
-        {/* Page Title */}
-        <Heading
-          as="h1"
-          color="white"
-          fontSize="60px"
-          fontWeight={700}
-          textAlign="center"
-          mb={8}
-          letterSpacing="-1.8px"
-        >
-          Events Calendar
-        </Heading>
+      <Box minH="100vh" bg="#1f49b6" color="white" pt={6} pb={20}>
+        <Container maxW="6xl" px={4}>
+          <BackArrow />
 
-        {error && (
-          <Text color="red.300" fontSize="lg" mb={4} textAlign="center">
-            {error}
-          </Text>
-        )}
+          <Heading textAlign="center" fontSize="60px" fontWeight="700" mb={3}>
+            My Events Calendar
+          </Heading>
 
-        {eventsByDate.length === 0 && !error && (
-          <Text color="white" fontSize="xl" textAlign="center">
-            No events have been scheduled yet.
-          </Text>
-        )}
+          <HStack justify="center" spacing={6} mb={4}>
+            <Button onClick={prevMonth} bg="white" color="#1f49b6">
+              ← Previous
+            </Button>
+            <Heading fontSize="32px">
+              {monthName} {year}
+            </Heading>
+            <Button onClick={nextMonth} bg="white" color="#1f49b6">
+              Next →
+            </Button>
+          </HStack>
 
-        <VStack spacing={10} align="stretch">
-          {eventsByDate.map(({ dateKey, events }) => (
-            <Box key={dateKey}>
-              {/* Date header */}
-              <Text
-                color="white"
-                fontSize="32px"
-                fontWeight="600"
-                mb={4}
-                textAlign="left"
+          {myEventsThisMonth.length === 0 && (
+            <Text textAlign="center" fontSize="20px" mb={6}>
+              You don't have any events this month.
+            </Text>
+          )}
+
+          <SimpleGrid columns={7} spacing={4} mb={4}>
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+              <Box
+                key={day}
+                textAlign="center"
+                fontWeight="bold"
+                fontSize="18px"
               >
-                {formatDateHeader(dateKey)}
-              </Text>
+                {day}
+              </Box>
+            ))}
+          </SimpleGrid>
 
-              {/* Grid of event cards for this day */}
-              <SimpleGrid
-                columns={{ base: 1, md: 2, lg: 3 }}
-                spacing={6}
-                alignItems="stretch"
+          <SimpleGrid columns={7} spacing={4}>
+            {calendarCells.map((day, idx) => (
+              <Box
+                key={idx}
+                bg="white"
+                borderRadius="md"
+                minH="120px"
+                color="black"
+                p={2}
+                boxShadow="md"
               >
-                {events.map((event) => (
-                  <Card
-                    key={event._id}
-                    borderWidth="1px"
-                    borderColor="#d9d9d9"
-                    bg="white"
-                    h="100%"
-                  >
-                    <CardBody>
-                      <HStack align="flex-start" spacing={4}>
-                        {/* Event image thumbnail */}
-                        <Image
-                          src={
-                            event.imageUrl ||
-                            "https://via.placeholder.com/96x96.png?text=Event"
-                          }
-                          alt={event.name}
-                          boxSize="72px"
-                          objectFit="cover"
-                          borderRadius="md"
-                          flexShrink={0}
-                        />
+                {!day && <Box h="100%" />}
 
-                        <Box flex="1">
-                          <Heading
-                            as="h3"
-                            size="sm"
-                            mb={1}
-                            color="#1e1e1e"
-                            fontFamily="Inter, Helvetica"
-                          >
-                            {event.name}
-                          </Heading>
+                {day && (
+                  <VStack align="stretch" spacing={2}>
+                    <Text fontWeight="bold">{day}</Text>
 
-                          <Text color="#444" fontSize="14px" noOfLines={3}>
-                            {event.description || "No description provided."}
+                    {eventsByDay[day]?.map((ev) => (
+                      <Card
+                        key={ev._id}
+                        bg="#1f49b6"
+                        color="white"
+                        borderRadius="md"
+                        cursor="pointer"
+                        onClick={() => navigate(`/event/${ev._id}`)}
+                        _hover={{ opacity: 0.9 }}
+                      >
+                        <CardBody p={2}>
+                          <Text fontSize="sm" fontWeight="600">
+                            {ev.name}
                           </Text>
-
-                          {event.location && (
-                            <Text color="#666" fontSize="13px" mt={1}>
-                              Location: {event.location}
-                            </Text>
-                          )}
-
-                          <HStack justify="space-between" mt={3}>
-                            <Badge
-                              colorScheme="purple"
-                              fontSize="0.8rem"
-                              borderRadius="full"
-                            >
-                              {formatTime(event.date)}
-                            </Badge>
-
-                            {event.tags?.length > 0 && (
-                              <HStack spacing={1} flexWrap="wrap">
-                                {event.tags.map((tag, idx) => (
-                                  <Badge
-                                    key={idx}
-                                    variant="subtle"
-                                    colorScheme="gray"
-                                    fontSize="0.65rem"
-                                    borderRadius="full"
-                                  >
-                                    {tag}
-                                  </Badge>
-                                ))}
-                              </HStack>
-                            )}
-                          </HStack>
-                        </Box>
-                      </HStack>
-                    </CardBody>
-                  </Card>
-                ))}
-              </SimpleGrid>
-            </Box>
-          ))}
-        </VStack>
-      </Container>
-    </Box>
+                          <Badge colorScheme="purple" mt={1}>
+                            {new Date(ev.date).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </Badge>
+                        </CardBody>
+                      </Card>
+                    ))}
+                  </VStack>
+                )}
+              </Box>
+            ))}
+          </SimpleGrid>
+        </Container>
+      </Box>
+    </>
   );
 }

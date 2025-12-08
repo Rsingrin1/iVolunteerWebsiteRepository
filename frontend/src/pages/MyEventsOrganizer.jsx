@@ -16,6 +16,8 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import Profile from "../assets/profileMenu";
+import SiteHeader from "../assets/SiteHeader";
+
 
 const API_BASE = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
@@ -26,7 +28,6 @@ export default function MyEventsOrganizer() {
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState(null);
 
-  const authToken = localStorage.getItem("authToken") || null;
   const organizerId =
     localStorage.getItem("organizerId") ||
     JSON.parse(localStorage.getItem("currentUser") || "{}").id ||
@@ -48,9 +49,13 @@ export default function MyEventsOrganizer() {
     navigate(`/modifyEvent?id=${id}`);
   };
 
+  const handleReviewApplicants = (id) => {
+    navigate(`/event/${id}/applicants`);
+  };
+
   useEffect(() => {
     const fetchEvents = async () => {
-      if (!authToken || !organizerId) {
+      if (!organizerId) {
         setApiError("You must be logged in as an organizer to view events.");
         setLoading(false);
         return;
@@ -63,9 +68,7 @@ export default function MyEventsOrganizer() {
         const res = await fetch(
           `${API_BASE}/api/events/organizer/${organizerId}`,
           {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-            },
+            credentials: "include", // cookie-based auth
           }
         );
 
@@ -98,10 +101,12 @@ export default function MyEventsOrganizer() {
     };
 
     fetchEvents();
-  }, [authToken, organizerId]);
+  }, [organizerId]);
 
   return (
     <Box bg="white" minH="100vh" data-model-id="16:90">
+            <SiteHeader />
+
       <Flex
         as="header"
         justify="space-between"
@@ -204,6 +209,14 @@ export default function MyEventsOrganizer() {
                 })
               : "";
 
+            //  NEW: counts for this event
+            const applicantCount = Array.isArray(event.applicants)
+              ? event.applicants.length
+              : 0;
+            const participantCount = Array.isArray(event.participants)
+              ? event.participants.length
+              : 0;
+
             return (
               <Card
                 key={event._id || index}
@@ -252,6 +265,20 @@ export default function MyEventsOrganizer() {
                           {timeStr && `${timeStr}`}
                           <br />
                           {dateStr}
+                        </Text>
+
+                        {/*  NEW: applicant / participant counts */}
+                        <Text
+                          fontFamily="Inter, Helvetica"
+                          fontWeight={400}
+                          fontSize="14px"
+                          lineHeight="140%"
+                          color="#333"
+                        >
+                          {applicantCount} pending applicant
+                          {applicantCount === 1 ? "" : "s"} ·{" "}
+                          {participantCount} approved volunteer
+                          {participantCount === 1 ? "" : "s"}
                         </Text>
                       </VStack>
 
@@ -303,6 +330,7 @@ export default function MyEventsOrganizer() {
                           py={3}
                           h="auto"
                           _hover={{ bg: "#181c71", opacity: 0.9 }}
+                          onClick={() => handleReviewApplicants(event._id)}
                         >
                           <Text
                             fontFamily="Inter, Helvetica"

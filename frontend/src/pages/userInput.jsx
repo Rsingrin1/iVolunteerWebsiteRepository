@@ -12,6 +12,7 @@ import {
   AlertIcon,
 } from "@chakra-ui/react";
 
+
 export default function InputUser() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
