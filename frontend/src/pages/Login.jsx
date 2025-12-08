@@ -37,6 +37,7 @@ export default function InputUser() {
     try {
       const res = await fetch(`${API_BASE}/api/login`, {
         method: "POST",
+        credentials: "include", // 🔥 cookie-only auth: accept HTTP-only token
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username,
@@ -62,27 +63,28 @@ export default function InputUser() {
         return;
       }
 
-      // Expect: { message, token, user: { id, username, email, userType } }
-      if (!data || !data.token || !data.user) {
+      // Expected response: { message, user: { id, username, email, userType } }
+      if (!data || !data.user) {
         setError("Unexpected login response from server.");
         return;
       }
 
-      // Save auth info for later (events, etc.)
-      localStorage.setItem("authToken", data.token);
-      localStorage.setItem("currentUser", JSON.stringify(data.user));
+      const user = data.user;
 
-      if (data.user.userType === "organizer") {
-        localStorage.setItem("organizerId", data.user.id);
+      // 🔥 Cookie holds the token; we only keep user info in localStorage
+      localStorage.setItem("currentUser", JSON.stringify(user));
+
+      // For organizer-only pages that need organizerId
+      if (user.userType === "organizer") {
+        localStorage.setItem("organizerId", user.id);
       } else {
         localStorage.removeItem("organizerId");
       }
 
       setMessage(data.message || "Login successful.");
 
+      // Redirect after login
       navigate("/Profile");
-
-
     } catch (err) {
       setError(err.message || "Network error during login.");
     } finally {
@@ -93,7 +95,7 @@ export default function InputUser() {
   return (
     <Box p={6} maxW="720px" mx="auto">
       <Heading as="h2" size="lg" mb={6} textAlign="center">
-        {/* you can put a subtitle here if you want */}
+        {/* Optional subtitle */}
       </Heading>
       <Box p={6} maxW="480px" mx="auto">
         <Heading as="h2" size="lg" mb={4} textAlign="center">

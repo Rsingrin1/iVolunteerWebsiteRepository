@@ -1,17 +1,15 @@
 // middleware/authMiddleware.js
 import jwt from "jsonwebtoken";
 
-// Basic auth: checks token, attaches req.user
+// Cookie-only auth: reads JWT from httpOnly "token" cookie
 export const requireAuth = (req, res, next) => {
-  const authHeader = req.headers.authorization || req.headers.Authorization;
+  const token = req.cookies?.token;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (!token) {
     return res
       .status(401)
-      .json({ message: "Authorization token missing or malformed." });
+      .json({ message: "Authentication required. No token found." });
   }
-
-  const token = authHeader.split(" ")[1];
 
   try {
     const decoded = jwt.verify(
@@ -43,7 +41,7 @@ export const requireOrganizer = (req, res, next) => {
   next();
 };
 
-// Volunteer or organizer (for applying, viewing protected stuff, etc.)
+// Volunteer or organizer guard
 export const requireVolunteerOrOrganizer = (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ message: "Not authenticated." });

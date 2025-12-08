@@ -98,19 +98,16 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-// ⬇️ NEW: login controller
 export const login = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // require (username OR email) + password
     if ((!username && !email) || !password) {
       return res
         .status(400)
         .json({ message: "Username or email and password are required." });
     }
 
-    // find user by username or email
     const user = username
       ? await User.findOne({ username })
       : await User.findOne({ email });
@@ -119,36 +116,38 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials." });
     }
 
-    // compare plain password with stored hash
     const isMatch = await bcrypt.compare(password, user.hash);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials." });
     }
 
-    // payload for token (keep it light)
     const payload = {
-      id: user._id,
+      id: user._id.toString(),
       username: user.username,
       email: user.email,
       userType: user.userType,
     };
 
-    // sign JWT
     const token = jwt.sign(
       payload,
       process.env.JWT_SECRET || "dev_secret_key_change_me",
-      {
-        expiresIn: "7d",
-      }
+      { expiresIn: "7d" }
     );
 
-    // respond with token + basic user info
-    res.status(200).json({
+    // COOKIE-ONLY: set HTTP-only cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false, // set true in prod with HTTPS
+      sameSite: "lax",
+      path: "/",     // important: send cookie on all API routes
+    });
+
+    return res.status(200).json({
       message: "Login successful.",
-      token,
       user: payload,
     });
   } catch (error) {
-    res.status(500).json({ errorMessage: error.message });
+    console.error("Login error:", error);
+    return res.status(500).json({ message: "Server error during login." });
   }
 };

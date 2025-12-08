@@ -32,4 +32,6 @@ git merge 'branch name' : merges the branch you are in with the branch you named
 git log --oneline : lets you view the history of commits on the branch you are in
 
 
+Cookie-Based Authentication (Development Notes)
 
+This project uses HTTP-only cookies for user authentication. Because browsers treat localhost and 127.0.0.1 as different site origins, cookie-based login will only work correctly when the frontend and backend share the same hostname. To ensure this, the Vite dev server has been configured to always run at http://localhost:5173 rather than http://127.0.0.1:5173. This change is required because authentication cookies issued by the backend at http://localhost:5000 are blocked when the frontend is accessed via 127.0.0.1, causing protected routes to return 401 Unauthorized. In production, this issue does not occur because the application will run under a single, consistent domain (e.g., https://ivolunteer.app), or under coordinated subdomains with proper CORS and cookie settings (sameSite: "none", secure: true, and a shared domain). This setup ensures that cookies are successfully stored, sent with API requests, and validated by the server in all environments.

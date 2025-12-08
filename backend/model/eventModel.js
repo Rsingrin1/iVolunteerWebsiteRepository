@@ -11,7 +11,7 @@ const eventSchema = new mongoose.Schema({
     type: String,
   },
   date: {
-    type: Date, // https://www.mongodb.com/docs/manual/reference/method/Date/
+    type: Date,
     required: true,
   },
   location: {
@@ -26,23 +26,33 @@ const eventSchema = new mongoose.Schema({
   tags: {
     type: [String],
   },
-
-  // main image for the event (stored as a URL)
   imageUrl: {
     type: String,
   },
-
-  // optional extra file URLs (flyers, docs, etc.)
   attachmentUrls: {
     type: [String],
     default: [],
   },
 
-  // 🔹 NEW: which organizer created/owns this event
+  // organizer who created this event
   organizer: {
     type: Schema.Types.ObjectId,
     ref: "Users",
     required: true,
+  },
+
+  // volunteers who applied
+  applicants: {
+    type: [Schema.Types.ObjectId],
+    ref: "Users",
+    default: [],
+  },
+
+  // volunteers who were accepted
+  participants: {
+    type: [Schema.Types.ObjectId],
+    ref: "Users",
+    default: [],
   },
 });
 

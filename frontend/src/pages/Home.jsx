@@ -1,64 +1,55 @@
-import { useState } from 'react'
-import reactLogo from '../assets/react.svg'
-import viteLogo from '/vite.svg'
-import '../assets/App.css'
+import React from "react";
+import { Box, Heading, VStack, Button } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
+import "./DevMatrix.css";  //  NEW — import animation styles
+
+export default function Home() {
+  const routes = [
+    { name: "Login", path: "/Login" },
+    { name: "Volunteer Sign Up", path: "/VolunteerSignUp" },
+    { name: "Organizer Sign Up", path: "/OrganizerSignUp" },
+    { name: "Profile Page", path: "/Profile" },
+    { name: "Organizer Dashboard", path: "/MyEventsOrganizer" },
+    { name: "Volunteer Dashboard", path: "/MyEventsVolunteer" },
+    { name: "Modify Event", path: "/modifyEvent" },
+    { name: "Events Calendar", path: "/calendar" },
+    { name: "Example Mongo Page", path: "/exampleMongoHookup" },
+    { name: "Landing Page", path: "/landingPage" },
+    { name: "Event Search", path: "/events/search" },
+  
+    { name: "My Volunteer Events", path: "/MyEventsVolunteer" },
 
 
-function App() {
-  const [count, setCount] = useState(0)
+  ];
 
   return (
-    <>
-      <div className="logo-row">
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        <Link to="/exampleMongoHookup">Go to Example Mongo Hookup Page</Link>
-      </p>
-      <p className="read-the-docs">
-        <Link to="/Profile">Go to Profile Page</Link>
-      </p>
-      <p className="read-the-docs">
-       <Link to="/MyEventsOrganizer">MyEventsOrganizer</Link>
-      </p>
-      <p className="read-the-docs">
-      <Link to="/landingPage">landingPage</Link>
-      </p>
+    <Box className="matrix-bg" minH="100vh" p={10}>
+      <div className="matrix-layer-3"></div>
+      <Heading mb={8} textAlign="center" color="green.300">
+        🧪 Developer Testing Menu
+      </Heading>
 
-
-      <p className="read-the-docs">
-      <Link to="/Login">Login</Link>
-      </p>
-      <p className="read-the-docs">
-      <Link to="/VolunteerSignUp">Volunteer Sign Up</Link>
-      </p>
-      <p className="read-the-docs">
-      <Link to="/OrganizerSignUp">Organizer Sign Up</Link>
-      </p>
-
-      <p className="read-the-docs">
-      <Link to="/modifyEvent">ModifyEvent</Link>
-      </p>
-      <p className="read-the-docs">
-        <Link to="/calendar">Events Calendar</Link>
-      </p>
-    </>
-  )
+      <VStack align="stretch" spacing={4} maxW="600px" mx="auto">
+        {routes.map((r) => (
+          <Button
+            as={Link}
+            to={r.path}
+            key={r.path}
+            colorScheme="green"
+            variant="outline"
+            size="lg"
+            borderColor="green.300"
+            color="green.200"
+            _hover={{
+              bg: "rgba(0, 255, 0, 0.1)",
+              borderColor: "green.400",
+              color: "green.300",
+            }}
+          >
+            {r.name}
+          </Button>
+        ))}
+      </VStack>
+    </Box>
+  );
 }
-
-export default App

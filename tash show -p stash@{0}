@@ -1,0 +1,216 @@
+[33mcommit 428b45068eccabe4ac66da9c7467c0a1446eab4e[m[33m ([m[1;35mrefs/stash[m[33m)[m
+Merge: 9c224dc 8ec442b
+Author: Maximino <mlicon@csus.edu>
+Date:   Sat Dec 6 18:00:25 2025 -0800
+
+    WIP on MaximinoLicon_dev_branch: 9c224dc implemented alot will document later forgive me please.... please
+
+[1mdiff --cc backend/.env[m
+[1mindex 517f27c,517f27c..16b7df1[m
+[1m--- a/backend/.env[m
+[1m+++ b/backend/.env[m
+[36m@@@ -1,1 -1,1 +1,2 @@@[m
+[31m--MONGO_URI=mongodb+srv://danielletasabia_db_user:XysL1X8zaJJOu2my@cluster0.nfuhh3f.mongodb.net/iVolunteer?appName=Cluster0[m
+[32m++MONGO_URI=mongodb+srv://danielletasabia_db_user:XysL1X8zaJJOu2my@cluster0.nfuhh3f.mongodb.net/iVolunteer?appName=Cluster0[m
+[32m++JWT_SECRET=super-secret-dev-key-change-this[m
+[1mdiff --cc backend/controller/userController.js[m
+[1mindex 8f33435,8f33435..43927e2[m
+[1m--- a/backend/controller/userController.js[m
+[1m+++ b/backend/controller/userController.js[m
+[36m@@@ -3,11 -3,11 +3,59 @@@[m
+  //tutorial - define schema, insert data[m
+  //https://www.youtube.com/watch?v=oYoe8PDAXi0&list=PL1oBBulPlvs97CWAXfqLJra7TamlwsfdS&index=5[m
+  [m
+[32m++// backend/controller/userController.js[m
+[32m++[m
+[32m++// backend/controller/userController.js[m
+[32m++[m
+  import User from "../model/userModel.js";[m
+[31m--import bcrypt from 'bcrypt';[m
+[32m++import bcrypt from "bcrypt";[m
+  import jwt from "jsonwebtoken";[m
+  [m
+[31m--// function to create new user instance[m
+[32m++const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";[m
+[32m++// Helper: sign JWT with user info[m
+[32m++function signToken(user) {[m
+[32m++  return jwt.sign([m
+[32m++    {[m
+[32m++      id: user._id.toString(),[m
+[32m++      username: user.username,[m
+[32m++      userType: user.userType,[m
+[32m++      email: user.email,[m
+[32m++    },[m
+[32m++    process.env.JWT_SECRET,[m
+[32m++    { expiresIn: "7d" } // 7 days[m
+[32m++  );[m
+[32m++}[m
+[32m++[m
+[32m++// Helper: send cookie + user payload[m
+[32m++function sendAuthCookie(res, user, message = "Login successful.") {[m
+[32m++  const token = signToken(user);[m
+[32m++[m
+[32m++  const isProd = process.env.NODE_ENV === "production";[m
+[32m++[m
+[32m++  // Set HTTP-only cookie[m
+[32m++  res.cookie("token", token, {[m
+[32m++    httpOnly: true,[m
+[32m++    secure: isProd,       // true if using https in prod[m
+[32m++    sameSite: "lax",[m
+[32m++    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days[m
+[32m++  });[m
+[32m++[m
+[32m++  // Return basic user info (no hash)[m
+[32m++  return res.status(200).json({[m
+[32m++    message,[m
+[32m++    user: {[m
+[32m++      id: user._id,[m
+[32m++      username: user.username,[m
+[32m++      email: user.email,[m
+[32m++      userType: user.userType,[m
+[32m++    },[m
+[32m++  });[m
+[32m++}[m
+[32m++[m
+[32m++// =======================[m
+[32m++//  CREATE USER (REGISTER)[m
+[32m++// =======================[m
+[32m++[m
+  export const create = async (req, res) => {[m
+    try {[m
+      // HASH PASSWORD[m
+[36m@@@ -17,21 -17,21 +65,95 @@@[m
+      console.log("hash:", hash);[m
+      req.body.hash = hash;[m
+  [m
+[31m--    const newUser = new User(req.body); // req.body --> sending info from client to server[m
+[32m++    const newUser = new User(req.body);[m
+      const { username, email } = newUser;[m
+[32m++[m
+      const userExist =[m
+[31m--      (await User.findOne({ username })) || (await User.findOne({ email })); // define condition to check validity[m
+[32m++      (await User.findOne({ username })) || (await User.findOne({ email }));[m
+      if (userExist) {[m
+        return res.status(400).json({ message: "User already exists." });[m
+      }[m
+  [m
+      const savedData = await newUser.save();[m
+[32m++    // you could auto-login here if you want, but for now just return the user[m
+      res.status(200).json(savedData);[m
+    } catch (error) {[m
+      res.status(500).json({ errorMessage: error.message });[m
+    }[m
+  };[m
+  [m
+[32m++// =======================[m
+[32m++//  LOGIN[m
+[32m++// =======================[m
+[32m++[m
+[32m++export const login = async (req, res) => {[m
+[32m++  try {[m
+[32m++    const { username, password } = req.body;[m
+[32m++[m
+[32m++    if (!username || !password) {[m
+[32m++      return res[m
+[32m++        .status(400)[m
+[32m++        .json({ message: "Username and password are required." });[m
+[32m++    }[m
+[32m++[m
+[32m++    const user = await User.findOne({ username });[m
+[32m++    if (!user) {[m
+[32m++      return res.status(400).json({ message: "Invalid username or password." });[m
+[32m++    }[m
+[32m++[m
+[32m++    const isMatch = await bcrypt.compare(password, user.hash);[m
+[32m++    if (!isMatch) {[m
+[32m++      return res.status(400).json({ message: "Invalid username or password." });[m
+[32m++    }[m
+[32m++[m
+[32m++    // ✅ Success – send cookie + user info[m
+[32m++    return sendAuthCookie(res, user);[m
+[32m++  } catch (error) {[m
+[32m++    res.status(500).json({ errorMessage: error.message });[m
+[32m++  }[m
+[32m++};[m
+[32m++[m
+[32m++// =======================[m
+[32m++//  GET CURRENT USER (/me)[m
+[32m++// =======================[m
+[32m++[m
+[32m++export const getMe = async (req, res) => {[m
+[32m++  try {[m
+[32m++    if (!req.user || !req.user.id) {[m
+[32m++      return res.status(401).json({ message: "Not authenticated." });[m
+[32m++    }[m
+[32m++[m
+[32m++    const user = await User.findById(req.user.id).select("-hash");[m
+[32m++    if (!user) {[m
+[32m++      return res.status(404).json({ message: "User not found." });[m
+[32m++    }[m
+[32m++[m
+[32m++    res.status(200).json(user);[m
+[32m++  } catch (error) {[m
+[32m++    res.status(500).json({ errorMessage: error.message });[m
+[32m++  }[m
+[32m++};[m
+[32m++[m
+[32m++// =======================[m
+[32m++//  LOGOUT[m
+[32m++// =======================[m
+[32m++[m
+[32m++export const logout = (req, res) => {[m
+[32m++  const isProd = process.env.NODE_ENV === "production";[m
+[32m++[m
+[32m++  res.clearCookie("token", {[m
+[32m++    httpOnly: true,[m
+[32m++    secure: isProd,[m
+[32m++    sameSite: "lax",[m
+[32m++  });[m
+[32m++[m
+[32m++  res.status(200).json({ message: "Logged out successfully." });[m
+[32m++};[m
+[32m++[m
+[32m++// =======================[m
+[32m++//  OTHER CRUD ENDPOINTS[m
+[32m++// =======================[m
+[32m++[m
+  export const getAllUsers = async (req, res) => {[m
+    try {[m
+      const userData = await User.find();[m
+[36m@@@ -64,10 -64,10 +186,8 @@@[m [mexport const update = async (req, res) [m
+      if (!userExist) {[m
+        return res.status(404).json({ message: "User not found." });[m
+      }[m
+[31m--    const updatedData = await User.findByIdAndUpdate(id, req.body, {[m
+[31m--      new: true,[m
+[31m--    });[m
+[31m--    res.status(200).json({ message: "User Updated successfully." });[m
+[32m++    await User.findByIdAndUpdate(id, req.body, { new: true });[m
+[32m++    res.status(200).json({ message: "User updated successfully." });[m
+    } catch (error) {[m
+      res.status(500).json({ errorMessage: error.message });[m
+    }[m
+[36m@@@ -86,58 -86,58 +206,3 @@@[m [mexport const deleteUser = async (req, r[m
+      res.status(500).json({ errorMessage: error.message });[m
+    }[m
+  };[m
+[31m--[m
+[31m--// ⬇️ NEW: login controller[m
+[31m--export const login = async (req, res) => {[m
+[31m--  try {[m
+[31m--    const { username, email, password } = req.body;[m
+[31m--[m
+[31m--    // require (username OR email) + password[m
+[31m--    if ((!username && !email) || !password) {[m
+[31m--      return res[m
+[31m--        .status(400)[m
+[31m--        .json({ message: "Username or email and password are required." });[m
+[31m--    }[m
+[31m--[m
+[31m--    // find user by username or email[m
+[31m--    const user = username[m
+[31m--      ? await User.findOne({ username })[m
+[31m--      : await User.findOne({ email });[m
+[31m--[m
+[31m--    if (!user) {[m
+[31m--      return res.status(400).json({ message: "Inv
