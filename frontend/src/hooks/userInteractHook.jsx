@@ -16,28 +16,34 @@ export default function useUser(id) {
   };
 
   const [user, setUser] = useState(initialState);
-  const token = localStorage.getItem("authToken");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const inputHandler = (e) => {
     const { name, value } = e.target;
     setUser({ ...user, [name]: value });
   };
 
-  // fetch user by ID from token
+  // fetch user from token (stored in httpOnly cookie)
   useEffect(() => {
-    if (!token) return; // Don't fetch if no token
-
-    axios
-      .get(`http://localhost:5000/api/user`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((res) => setUser(res.data))
-      .catch((err) => {
+    const fetchUser = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await axios.get(`http://localhost:5000/api/user`, {
+          withCredentials: true, // Send cookies with request
+        });
+        setUser(res.data);
+      } catch (err) {
         console.error("Error fetching user:", err.response?.status, err.message);
-      });
-  }, [token]); // Only depend on token
+        setError(err.response?.data?.message || err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []); // Run once on mount
 
   // update user
   const updateUser = async () => {
@@ -45,9 +51,7 @@ export default function useUser(id) {
       `http://localhost:5000/api/user`,
       user,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        withCredentials: true, // Send cookies with request
       }
     );
   };
@@ -57,5 +61,7 @@ export default function useUser(id) {
     setUser,
     inputHandler,
     updateUser,
+    loading,
+    error,
   };
 }
