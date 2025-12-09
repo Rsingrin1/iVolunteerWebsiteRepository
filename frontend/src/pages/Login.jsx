@@ -33,6 +33,7 @@ export default function InputUser() {
     
     setLoading(true);
     try {
+      //Is this old code that accidentally tries to create a new user instead of logging in?
       const res = await fetch(`${API_BASE}/api/user`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

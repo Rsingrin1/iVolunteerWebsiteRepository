@@ -104,11 +104,12 @@ const transporter = nodemailer.createTransport({
 
 const mailOptions = {
     from: process.env.GMAIL_USER,
-    to: 'rhysunior@gmail.com', //send to our test gmail
+    to: 'r.w.singrin@gmail.com', //send to this email address
     subject: 'Node.js mail',
-    text: 'sample text'
+    text: 'Welcome to iVolunteer! Your account has been registered.' //update to reference actual user name
 };
 
+/*
 transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
         console.error('send mail error', error);
@@ -116,4 +117,24 @@ transporter.sendMail(mailOptions, (error, info) => {
     else {
         console.log('Email sent: ', info.response);
     }
-}); //node server.js */
+});*/ //sends one time test email upon server start
+
+// endpoint for nodemailer
+app.post('/send-email', async (req, res) => {
+    const { email, username } = req.body;
+    
+    const mailOptions = {
+        from: process.env.GMAIL_USER,
+        to: email,
+        subject: 'Welcome to iVolunteer!',
+        text: `Welcome to iVolunteer, ${username}! Your account has been registered.`
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        res.status(200).json({ message: 'Email sent successfully', info });
+    } catch (error) {
+        console.error('Email send error:', error);
+        res.status(500).json({ message: 'Failed to send email', error });
+    }
+});
