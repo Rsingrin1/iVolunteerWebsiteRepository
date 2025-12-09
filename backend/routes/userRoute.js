@@ -1,15 +1,25 @@
-import express from "express"
+// routes/userRoute.js
+import express from "express";
 
-//function to create new user
-import { create, getUserById, getAllUsers, update, deleteUser} from "../controller/userController.js"
+import {
+  create,
+  getUserById,
+  getAllUsers,
+  update,
+  deleteUser,
+  login,
+} from "../controller/userController.js";
+import { requireAuth } from "../middleware/authMiddleware.js";
 
 const route = express.Router();
 
-route.post("/user",create);
-route.get("/user/:id",getUserById);
+route.post("/user", create);
+route.get("/user", requireAuth, getUserById);
 route.get("/users", getAllUsers);
-route.put("/update/user/:id", update);
-route.delete("/delete/user/:id", deleteUser);
+route.put("/user", requireAuth, update);
+//route.delete("/user", requireAuth, deleteUser);
 
+// ⬇️ NEW login endpoint
+route.post("/login", login);
 
 export default route;

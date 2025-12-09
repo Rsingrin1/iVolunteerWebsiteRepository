@@ -1,32 +1,61 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
+
+const { Schema } = mongoose;
 
 const eventSchema = new mongoose.Schema({
-    name:{
-        type:String,
-        required:true
-    },
-    description:{
-        type:String
-    },
-    date:{
-        type:Date, //https://www.mongodb.com/docs/manual/reference/method/Date/
-        required:true
-    },
-    location:{
-        type:String
-    },
-    notifMessage:{
-        type:String
-    },
-    notifTime:{
-        type:Date
-    },
+  name: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+  },
+  date: {
+    type: Date,
+    required: true,
+  },
+  location: {
+    type: String,
+  },
+  notifMessage: {
+    type: String,
+  },
+  notifTime: {
+    type: Date,
+  },
+  tags: {
+    type: [Schema.Types.ObjectId],
+    ref: "Tag",
+    default: [],
+  },
+  imageUrl: {
+    type: String,
+  },
+  attachmentUrls: {
+    type: [String],
+    default: [],
+  },
 
-    tags:{
-        type:[String]
-    }
-    //research how to store images and other file types for the forms
-    //TODO: create event controller, route
-})
+  // organizer who created this event
+  organizer: {
+    type: Schema.Types.ObjectId,
+    ref: "Users",
+    required: true,
+  },
 
-export default mongoose.model("Events", eventSchema)
+  // volunteers who applied
+  applicants: {
+    type: [Schema.Types.ObjectId],
+    ref: "Users",
+    default: [],
+  },
+
+  // volunteers who were accepted
+  participants: {
+    type: [Schema.Types.ObjectId],
+    ref: "Users",
+    default: [],
+  },
+});
+
+export default mongoose.model("Events", eventSchema);
