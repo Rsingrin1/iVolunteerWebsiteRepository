@@ -19,12 +19,10 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import BackArrow from "../assets/backArrow";
-import SiteHeader from "../assets/SiteHeader";
-
 
 const sectionData = [
   { title: "Time & Location" },
-  { title: "Forms" },
+  
   { title: "Notifications" },
 ];
 
@@ -64,7 +62,9 @@ const authToken = localStorage.getItem("authToken") || null;
       setLoading(true);
       setApiError(null);
       try {
-        const res = await fetch(`${API_BASE}/api/event/${eventId}`);
+        const res = await fetch(`${API_BASE}/api/event/${eventId}`, {
+  credentials: "include",
+        });
         let data = null;
         const contentType = res.headers.get("content-type") || "";
         if (contentType.includes("application/json")) {
@@ -117,17 +117,7 @@ const authToken = localStorage.getItem("authToken") || null;
   setLoading(true);
   setApiError(null);
 
-  if (!authToken) {
-    setApiError("You must be logged in as an organizer to save events.");
-    setLoading(false);
-    return;
-  }
-
-  if (!organizerId) {
-    setApiError("Missing organizer ID. Please log in again.");
-    setLoading(false);
-    return;
-  }
+  // Cookie-based auth → no client-side token check needed
 
   const payload = {
     name: form.name,
@@ -146,13 +136,11 @@ const authToken = localStorage.getItem("authToken") || null;
     const method = isEdit ? "PUT" : "POST";
 
     const res = await fetch(url, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${authToken}`,   // ⬅️ IMPORTANT
-      },
-      body: JSON.stringify(payload),
-    });
+  method,
+  headers: { "Content-Type": "application/json" },
+  credentials: "include",
+  body: JSON.stringify(payload),
+      });
 
     let data = null;
     const contentType = res.headers.get("content-type") || "";
@@ -183,8 +171,6 @@ const authToken = localStorage.getItem("authToken") || null;
 
   return (
     <Box bg="#1f49b6" minH="100vh" w="full" pt={6}>
-      <SiteHeader />
-
       <Container maxW="6xl" px={4} pb={10}>
         <BackArrow />
 
@@ -333,520 +319,144 @@ const authToken = localStorage.getItem("authToken") || null;
                 {section.title}
               </Heading>
 
-              {/* Time & Location */}
               {section.title === "Time & Location" && (
-                <Stack spacing={8}>
-                  <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
-                    {/* Date Card */}
-                    <Box
-                      bg="#e6f0ff"
-                      borderRadius="28px"
-                      borderWidth="1px"
-                      borderColor="#b7c9e6"
-                      overflow="hidden"
-                    >
-                      <Box
-                        borderBottomWidth="1px"
-                        borderColor="#b7c9e6"
-                        p={6}
-                      >
-                        <VStack align="stretch" spacing={4}>
-                          <Text
-                            fontSize="14px"
-                            fontWeight={500}
-                            color="#5b6b82"
-                            fontFamily="'Inter', Helvetica"
-                          >
-                            Select date and time
-                          </Text>
-                          <HStack justify="space-between">
-                            <Text
-                              fontSize="20px"
-                              fontWeight={500}
-                              color="#1c1b1f"
-                            >
-                              Event date & time
-                            </Text>
-                          </HStack>
-                        </VStack>
-                      </Box>
+  <Stack spacing={8}>
+    
+    {/* FULL-WIDTH DATE & TIME CARD */}
+    <Box
+      w="100%"
+      bg="#e6f0ff"
+      borderRadius="28px"
+      borderWidth="1px"
+      borderColor="#b7c9e6"
+      overflow="hidden"
+    >
+      <Box borderBottomWidth="1px" borderColor="#b7c9e6" p={6}>
+        <VStack align="stretch" spacing={4}>
+          <Text
+            fontSize="14px"
+            fontWeight={500}
+            color="#5b6b82"
+            fontFamily="'Inter', Helvetica"
+          >
+            Select date and time
+          </Text>
+          <HStack justify="space-between">
+            <Text fontSize="20px" fontWeight={500} color="#1c1b1f">
+              Event date &amp; time
+            </Text>
+          </HStack>
+        </VStack>
+      </Box>
 
-                      <Box p={6}>
-                        <FormControl position="relative">
-                          <FormLabel
-                            position="absolute"
-                            top="-12px"
-                            left="12px"
-                            px={1}
-                            bg="#e6f0ff"
-                            fontSize="12px"
-                            color="#1f49b6"
-                          >
-                            Date & Time
-                          </FormLabel>
-                          <Input
-                            type="datetime-local"
-                            name="date"
-                            h="56px"
-                            borderWidth="2px"
-                            borderColor="#1f49b6"
-                            bg="white"
-                            fontFamily="'Inter', Helvetica"
-                            value={form.date}
-                            onChange={handleChange}
-                          />
-                        </FormControl>
-                      </Box>
-                    </Box>
+      <Box p={6}>
+        <FormControl position="relative">
+          <FormLabel
+            position="absolute"
+            top="-12px"
+            left="12px"
+            px={1}
+            bg="#e6f0ff"
+            fontSize="12px"
+            color="#1f49b6"
+          >
+            Date & Time
+          </FormLabel>
+          <Input
+            type="datetime-local"
+            name="date"
+            h="56px"
+            borderWidth="2px"
+            borderColor="#1f49b6"
+            bg="white"
+            fontFamily="'Inter', Helvetica"
+            value={form.date}
+            onChange={handleChange}
+          />
+        </FormControl>
+      </Box>
+    </Box>
 
-                    {/* Time Card (visual) */}
-                    <Box
-                      bg="#e6f0ff"
-                      borderRadius="28px"
-                      borderWidth="1px"
-                      borderColor="#b7c9e6"
-                      p={6}
-                    >
-                      <VStack align="stretch" spacing={5}>
-                        <Text
-                          fontSize="14px"
-                          fontWeight={500}
-                          color="#5b6b82"
-                        >
-                          Enter time (visual)
-                        </Text>
+    {/* LOCATION FIELD */}
+    <Box maxW="lg" mt={4}>
+      <FormControl>
+        <FormLabel
+          fontFamily="'Inter', Helvetica"
+          fontWeight={400}
+          fontSize="20px"
+          color="white"
+        >
+          Location
+        </FormLabel>
+        <Input
+          name="location"
+          placeholder="Address"
+          bg="#e6f0ff"
+          borderColor="#b7c9e6"
+          borderWidth="1.6px"
+          borderRadius="10px"
+          px="24px"
+          py="18px"
+          fontFamily="'Inter', Helvetica"
+          fontSize="18px"
+          value={form.location}
+          onChange={handleChange}
+        />
+      </FormControl>
+    </Box>
+  </Stack>
+)}
 
-                        <HStack align="flex-start" spacing={3}>
-                          {/* Hour */}
-                          <VStack spacing={2} flex="1">
-                            <Flex
-                              h="72px"
-                              w="full"
-                              align="center"
-                              justify="center"
-                              gap={1}
-                              px={4}
-                              py={2}
-                              bg="#d0e2ff"
-                              borderRadius="lg"
-                              borderWidth="2px"
-                              borderColor="#1f49b6"
-                            >
-                              <Text
-                                fontSize="32px"
-                                fontWeight="600"
-                                color="#0d2a73"
-                              >
-                                20
-                              </Text>
-                              <Box w="2px" h="42px" bg="#1f49b6" />
-                            </Flex>
-                            <Text
-                              fontSize="12px"
-                              color="#5b6b82"
-                              textAlign="center"
-                            >
-                              Hour
-                            </Text>
-                          </VStack>
 
-                          {/* colon */}
-                          <Flex
-                            align="center"
-                            justify="center"
-                            h="72px"
-                            w="24px"
-                          >
-                            <Text fontSize="40px" color="white">
-                              :
-                            </Text>
-                          </Flex>
-
-                          {/* Minutes */}
-                          <VStack spacing={2} flex="1">
-                            <Flex
-                              h="72px"
-                              w="full"
-                              align="center"
-                              justify="center"
-                              px={4}
-                              py={2}
-                              bg="#e6f0ff"
-                              borderRadius="lg"
-                            >
-                              <Text
-                                fontSize="32px"
-                                fontWeight="600"
-                                color="#0d2a73"
-                              >
-                                00
-                              </Text>
-                            </Flex>
-                            <Text
-                              fontSize="12px"
-                              color="#5b6b82"
-                              textAlign="center"
-                            >
-                              Minute
-                            </Text>
-                          </VStack>
-
-                          {/* AM / PM */}
-                          <Box
-                            w="52px"
-                            h="72px"
-                            borderRadius="lg"
-                            overflow="hidden"
-                            borderWidth="1px"
-                            borderColor="#b7c9e6"
-                          >
-                            <Flex
-                              h="50%"
-                              align="center"
-                              justify="center"
-                              bg="#d0e2ff"
-                              borderBottomWidth="1px"
-                              borderColor="#b7c9e6"
-                            >
-                              <Text
-                                fontSize="14px"
-                                fontWeight="500"
-                                color="#0d2a73"
-                              >
-                                AM
-                              </Text>
-                            </Flex>
-                            <Flex
-                              h="50%"
-                              align="center"
-                              justify="center"
-                            >
-                              <Text
-                                fontSize="14px"
-                                fontWeight="500"
-                                color="#5b6b82"
-                              >
-                                PM
-                              </Text>
-                            </Flex>
-                          </Box>
-                        </HStack>
-                      </VStack>
-                    </Box>
-
-                    {/* Duration Card (visual) */}
-                    <Box
-                      bg="#e6f0ff"
-                      borderRadius="28px"
-                      borderWidth="1px"
-                      borderColor="#b7c9e6"
-                      p={6}
-                    >
-                      <VStack align="stretch" spacing={5}>
-                        <Text
-                          fontSize="14px"
-                          fontWeight={500}
-                          color="#5b6b82"
-                        >
-                          Enter Duration (visual)
-                        </Text>
-
-                        <HStack align="flex-start" spacing={3}>
-                          {/* Hour */}
-                          <VStack spacing={2} flex="1">
-                            <Flex
-                              h="72px"
-                              w="full"
-                              align="center"
-                              justify="center"
-                              gap={1}
-                              px={4}
-                              py={2}
-                              bg="#d0e2ff"
-                              borderRadius="lg"
-                              borderWidth="2px"
-                              borderColor="#1f49b6"
-                            >
-                              <Text
-                                fontSize="32px"
-                                fontWeight="600"
-                                color="#0d2a73"
-                              >
-                                01
-                              </Text>
-                              <Box w="2px" h="42px" bg="#1f49b6" />
-                            </Flex>
-                            <Text
-                              fontSize="12px"
-                              color="#5b6b82"
-                              textAlign="center"
-                            >
-                              Hour
-                            </Text>
-                          </VStack>
-
-                          {/* colon */}
-                          <Flex
-                            align="center"
-                            justify="center"
-                            h="72px"
-                            w="24px"
-                          >
-                            <Text fontSize="40px" color="white">
-                              :
-                            </Text>
-                          </Flex>
-
-                          {/* Minutes */}
-                          <VStack spacing={2} flex="1">
-                            <Flex
-                              h="72px"
-                              w="full"
-                              align="center"
-                              justify="center"
-                              px={4}
-                              py={2}
-                              bg="#e6f0ff"
-                              borderRadius="lg"
-                            >
-                              <Text
-                                fontSize="32px"
-                                fontWeight="600"
-                                color="#0d2a73"
-                              >
-                                30
-                              </Text>
-                            </Flex>
-                            <Text
-                              fontSize="12px"
-                              color="#5b6b82"
-                              textAlign="center"
-                            >
-                              Minute
-                            </Text>
-                          </VStack>
-                        </HStack>
-                      </VStack>
-                    </Box>
-                  </SimpleGrid>
-
-                  {/* Location */}
-                  <Box maxW="lg" mt={4}>
-                    <FormControl>
-                      <FormLabel
-                        fontFamily="'Inter', Helvetica"
-                        fontWeight={400}
-                        fontSize="20px"
-                        color="white"
-                      >
-                        Location
-                      </FormLabel>
-                      <Input
-                        name="location"
-                        placeholder="Address"
-                        bg="#e6f0ff"
-                        borderColor="#b7c9e6"
-                        borderWidth="1.6px"
-                        borderRadius="10px"
-                        px="24px"
-                        py="18px"
-                        fontFamily="'Inter', Helvetica"
-                        fontSize="18px"
-                        value={form.location}
-                        onChange={handleChange}
-                      />
-                    </FormControl>
-                  </Box>
-                </Stack>
-              )}
-
-              {/* Forms */}
-              {section.title === "Forms" && (
-                <Box
-                  maxW="331px"
-                  bg="#e6f0ff"
-                  borderRadius="20px"
-                  boxShadow="0px 4px 4px rgba(0,0,0,0.25)"
-                  p={6}
-                >
-                  <VStack align="stretch" spacing={6}>
-                    <FormControl>
-                      <FormLabel
-                        fontFamily="'Inter', Helvetica"
-                        fontWeight={400}
-                        fontSize="18px"
-                        color="#0d2a73"
-                      >
-                        Upload Volunteer Forms
-                      </FormLabel>
-                      <IconButton
-                        aria-label="Upload forms"
-                        variant="ghost"
-                        size="lg"
-                        w="48px"
-                        h="48px"
-                        p={0}
-                        _hover={{ bg: "transparent" }}
-                        icon={
-                          <Box as="span" fontSize="40px">
-                            📄
-                          </Box>
-                        }
-                      />
-                    </FormControl>
-
-                    <Image
-                      src="https://c.animaapp.com/mifbvir6JSInmQ/img/group-42.png"
-                      alt="Forms preview"
-                      w="full"
-                    />
-                  </VStack>
-                </Box>
-              )}
-
-              {/* Notifications */}
               {section.title === "Notifications" && (
-                <Stack spacing={6}>
-                  {/* Notification Message */}
-                  <Box
-                    maxW="323px"
-                    bg="#e6f0ff"
-                    borderRadius="20px"
-                    boxShadow="0px 4px 4px rgba(0,0,0,0.25)"
-                    p={6}
-                  >
-                    <FormControl>
-                      <FormLabel
-                        fontFamily="'Inter', Helvetica"
-                        fontWeight={400}
-                        fontSize="16px"
-                        color="#0d2a73"
-                      >
-                        Notification Message
-                      </FormLabel>
-                      <Box position="relative">
-                        <Textarea
-                          name="notifMessage"
-                          placeholder="Describe your event"
-                          minH="80px"
-                          resize="none"
-                          bg="white"
-                          borderColor="#b7c9e6"
-                          fontFamily="'Inter', Helvetica"
-                          fontSize="16px"
-                          value={form.notifMessage}
-                          onChange={handleChange}
-                        />
-                        <Image
-                          src="https://c.animaapp.com/mifbvir6JSInmQ/img/drag.svg"
-                          alt="Drag"
-                          w="7px"
-                          h="7px"
-                          position="absolute"
-                          right={2}
-                          bottom={2}
-                        />
-                      </Box>
-                    </FormControl>
-                  </Box>
+  <Stack spacing={6}>
+    {/* Functional Notification Message */}
+    <Box
+      maxW="323px"
+      bg="#e6f0ff"
+      borderRadius="20px"
+      boxShadow="0px 4px 4px rgba(0,0,0,0.25)"
+      p={6}
+    >
+      <FormControl>
+        <FormLabel
+          fontFamily="'Inter', Helvetica"
+          fontWeight={400}
+          fontSize="16px"
+          color="#0d2a73"
+        >
+          Notification Message
+        </FormLabel>
 
-                  {/* When to send notification (visual only for now) */}
-                  <Box
-                    maxW="328px"
-                    bg="#e6f0ff"
-                    borderRadius="28px"
-                    borderWidth="1px"
-                    borderColor="#b7c9e6"
-                    p={6}
-                  >
-                    <VStack align="stretch" spacing={5}>
-                      <Text
-                        fontSize="14px"
-                        fontWeight={500}
-                        color="#5b6b82"
-                      >
-                        Send notification how long before event? (visual)
-                      </Text>
+        <Box position="relative">
+          <Textarea
+            name="notifMessage"
+            placeholder="Message volunteers will receive"
+            minH="80px"
+            resize="none"
+            bg="white"
+            borderColor="#b7c9e6"
+            fontFamily="'Inter', Helvetica"
+            fontSize="16px"
+            value={form.notifMessage}
+            onChange={handleChange}
+          />
 
-                      <HStack align="flex-start" spacing={3}>
-                        {/* Hour */}
-                        <VStack spacing={2} flex="1">
-                          <Flex
-                            h="72px"
-                            w="full"
-                            align="center"
-                            justify="center"
-                            gap={1}
-                            px={4}
-                            py={2}
-                            bg="#d0e2ff"
-                            borderRadius="lg"
-                            borderWidth="2px"
-                            borderColor="#1f49b6"
-                          >
-                            <Text
-                              fontSize="32px"
-                              fontWeight="600"
-                              color="#0d2a73"
-                            >
-                              00
-                            </Text>
-                            <Box w="2px" h="42px" bg="#1f49b6" />
-                          </Flex>
-                          <Text
-                            fontSize="12px"
-                            color="#5b6b82"
-                            textAlign="center"
-                          >
-                            Hour
-                          </Text>
-                        </VStack>
+          <Image
+            src="https://c.animaapp.com/mifbvir6JSInmQ/img/drag.svg"
+            alt="Drag"
+            w="7px"
+            h="7px"
+            position="absolute"
+            right={2}
+            bottom={2}
+          />
+        </Box>
+      </FormControl>
+    </Box>
+  </Stack>
+)}
 
-                        {/* colon */}
-                        <Flex
-                          align="center"
-                          justify="center"
-                          h="72px"
-                          w="24px"
-                        >
-                          <Text fontSize="40px" color="white">
-                            :
-                          </Text>
-                        </Flex>
-
-                        {/* Minutes */}
-                        <VStack spacing={2} flex="1">
-                          <Flex
-                            h="72px"
-                            w="full"
-                            align="center"
-                            justify="center"
-                            px={4}
-                            py={2}
-                            bg="#e6f0ff"
-                            borderRadius="lg"
-                          >
-                            <Text
-                              fontSize="32px"
-                              fontWeight="600"
-                              color="#0d2a73"
-                            >
-                              30
-                            </Text>
-                          </Flex>
-                          <Text
-                            fontSize="12px"
-                            color="#5b6b82"
-                            textAlign="center"
-                          >
-                            Minute
-                          </Text>
-                        </VStack>
-                      </HStack>
-                    </VStack>
-                  </Box>
-                </Stack>
-              )}
             </Box>
           ))}
 

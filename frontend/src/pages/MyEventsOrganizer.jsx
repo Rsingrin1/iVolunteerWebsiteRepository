@@ -18,7 +18,6 @@ import { useNavigate } from "react-router-dom";
 import Profile from "../assets/profileMenu";
 import SiteHeader from "../assets/SiteHeader";
 
-
 const API_BASE = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
 export default function MyEventsOrganizer() {
@@ -34,7 +33,6 @@ export default function MyEventsOrganizer() {
     null;
 
   const handleLogout = () => {
-    // basic logout: clear auth info
     localStorage.removeItem("authToken");
     localStorage.removeItem("currentUser");
     localStorage.removeItem("organizerId");
@@ -42,7 +40,7 @@ export default function MyEventsOrganizer() {
   };
 
   const handleCreateEvent = () => {
-    navigate("/modifyEvent"); // no id -> create mode
+    navigate("/modifyEvent");
   };
 
   const handleModifyEvent = (id) => {
@@ -51,6 +49,32 @@ export default function MyEventsOrganizer() {
 
   const handleReviewApplicants = (id) => {
     navigate(`/event/${id}/applicants`);
+  };
+
+  // 🔥 NEW: DELETE EVENT FUNCTION
+  const handleDeleteEvent = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this event?")) return;
+
+    try {
+     const res = await fetch(`${API_BASE}/api/delete/event/${id}`, {
+  method: "DELETE",
+  credentials: "include",
+});
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        alert(
+          (data && (data.message || data.errorMessage)) ||
+            "Failed to delete event."
+        );
+        return;
+      }
+
+      // Remove deleted event from UI instantly
+      setEvents((prev) => prev.filter((event) => event._id !== id));
+    } catch (err) {
+      alert("Network error while deleting event.");
+    }
   };
 
   useEffect(() => {
@@ -68,7 +92,7 @@ export default function MyEventsOrganizer() {
         const res = await fetch(
           `${API_BASE}/api/events/organizer/${organizerId}`,
           {
-            credentials: "include", // cookie-based auth
+            credentials: "include",
           }
         );
 
@@ -105,7 +129,7 @@ export default function MyEventsOrganizer() {
 
   return (
     <Box bg="white" minH="100vh" data-model-id="16:90">
-            <SiteHeader />
+      <SiteHeader />
 
       <Flex
         as="header"
@@ -133,11 +157,7 @@ export default function MyEventsOrganizer() {
         />
       </Flex>
 
-      <Container
-        maxW="1440px"
-        px={{ base: 4, md: 6, lg: "175px" }}
-        as="main"
-      >
+      <Container maxW="1440px" px={{ base: 4, md: 6, lg: "175px" }} as="main">
         <Box
           mb={6}
           opacity={0}
@@ -193,7 +213,7 @@ export default function MyEventsOrganizer() {
         )}
 
         {!loading && !apiError && events.length === 0 && (
-          <Text color="gray.600">You don&apos;t have any events yet.</Text>
+          <Text color="gray.600">You don't have any events yet.</Text>
         )}
 
         <VStack spacing={6} align="stretch">
@@ -209,7 +229,6 @@ export default function MyEventsOrganizer() {
                 })
               : "";
 
-            //  NEW: counts for this event
             const applicantCount = Array.isArray(event.applicants)
               ? event.applicants.length
               : 0;
@@ -267,7 +286,6 @@ export default function MyEventsOrganizer() {
                           {dateStr}
                         </Text>
 
-                        {/*  NEW: applicant / participant counts */}
                         <Text
                           fontFamily="Inter, Helvetica"
                           fontWeight={400}
@@ -339,6 +357,27 @@ export default function MyEventsOrganizer() {
                             lineHeight="100%"
                           >
                             Review Applicants
+                          </Text>
+                        </Button>
+
+                        {/* 🔥 NEW DELETE BUTTON */}
+                        <Button
+                          bg="red.600"
+                          color="white"
+                          borderRadius="lg"
+                          px={3}
+                          py={3}
+                          h="auto"
+                          _hover={{ bg: "red.700" }}
+                          onClick={() => handleDeleteEvent(event._id)}
+                        >
+                          <Text
+                            fontFamily="Inter, Helvetica"
+                            fontWeight={400}
+                            fontSize="16px"
+                            lineHeight="100%"
+                          >
+                            Delete Event
                           </Text>
                         </Button>
                       </HStack>
