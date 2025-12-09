@@ -17,6 +17,7 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import Select from "react-select";
 import BackArrow from "../assets/backArrow";
 import SiteHeader from "../assets/SiteHeader";
 
@@ -31,7 +32,8 @@ export default function EventsSearch() {
 
   // filters
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTag, setActiveTag] = useState("All");
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [excludedTags, setExcludedTags] = useState([]);
   const [startDate, setStartDate] = useState(""); // yyyy-mm-dd
   const [endDate, setEndDate] = useState("");
   const [locationTerm, setLocationTerm] = useState("");
@@ -60,15 +62,32 @@ export default function EventsSearch() {
   }, []);
 
   const availableTags = Array.from(
-    new Set(events.flatMap((ev) => (Array.isArray(ev.tags) ? ev.tags : [])))
+    new Set(
+      events.flatMap((ev) => {
+        if (!Array.isArray(ev.tags)) return [];
+        return ev.tags.map((t) => (typeof t === "object" ? t.name : t));
+      })
+    )
   );
+
+  const tagOptions = availableTags.map((name) => ({ value: name, label: name }));
 
   const filteredEvents = events
     .filter((ev) => {
       const evDate = ev.date ? new Date(ev.date) : null;
 
-      if (activeTag !== "All") {
-        if (!ev.tags || !ev.tags.includes(activeTag)) return false;
+      // If tags are selected, event must have at least one matching tag
+      if (selectedTags.length > 0) {
+        const tagNames = (ev.tags || []).map((t) => (typeof t === "object" ? t.name : t));
+        const hasMatchingTag = selectedTags.some((selectedTag) => tagNames.includes(selectedTag.value));
+        if (!hasMatchingTag) return false;
+      }
+
+      // If excluded tags are selected, event must not have any excluded tags
+      if (excludedTags.length > 0) {
+        const tagNames = (ev.tags || []).map((t) => (typeof t === "object" ? t.name : t));
+        const hasExcludedTag = excludedTags.some((excludedTag) => tagNames.includes(excludedTag.value));
+        if (hasExcludedTag) return false;
       }
 
       if (startDate && evDate) {
@@ -90,11 +109,12 @@ export default function EventsSearch() {
       if (!searchTerm.trim()) return true;
 
       const s = searchTerm.toLowerCase();
+      const tagStrings = (ev.tags || []).map((t) => (typeof t === "object" ? t.name : t));
       const text = [
         ev.name,
         ev.description,
         ev.location,
-        ...(ev.tags || []),
+        ...tagStrings,
       ]
         .filter(Boolean)
         .join(" ")
@@ -114,7 +134,8 @@ export default function EventsSearch() {
 
   const clearFilters = () => {
     setSearchTerm("");
-    setActiveTag("All");
+    setSelectedTags([]);
+    setExcludedTags([]);
     setStartDate("");
     setEndDate("");
     setLocationTerm("");
@@ -160,28 +181,63 @@ export default function EventsSearch() {
               color="black"
             />
 
-            <HStack spacing={2} flexWrap="wrap">
-              <Button
-                size="sm"
-                variant={activeTag === "All" ? "solid" : "outline"}
-                colorScheme="teal"
-                onClick={() => setActiveTag("All")}
-              >
-                All
-              </Button>
+            <Box>
+              <Select
+                options={tagOptions}
+                isMulti
+                isSearchable
+                placeholder="Filter by tags (select or search)..."
+                value={selectedTags}
+                onChange={(selected) => setSelectedTags(Array.isArray(selected) ? selected : [])}
+                styles={{
+                  menu: (provided) => ({
+                    ...provided,
+                    zIndex: 9999,
+                    backgroundColor: "white",
+                  }),
+                  option: (provided, state) => ({
+                    ...provided,
+                    backgroundColor: state.isSelected ? "#1f49b6" : state.isFocused ? "#e6f0ff" : "white",
+                    color: state.isSelected ? "white" : "#1f49b6",
+                    cursor: "pointer",
+                  }),
+                  control: (provided) => ({
+                    ...provided,
+                    backgroundColor: "white",
+                    borderColor: "#b7c9e6",
+                  }),
+                }}
+              />
+            </Box>
 
-              {availableTags.map((tag) => (
-                <Button
-                  key={tag}
-                  size="sm"
-                  variant={activeTag === tag ? "solid" : "outline"}
-                  colorScheme="teal"
-                  onClick={() => setActiveTag(tag)}
-                >
-                  {tag}
-                </Button>
-              ))}
-            </HStack>
+            <Box>
+              <Select
+                options={tagOptions}
+                isMulti
+                isSearchable
+                placeholder="Exclude tags (select or search)..."
+                value={excludedTags}
+                onChange={(selected) => setExcludedTags(Array.isArray(selected) ? selected : [])}
+                styles={{
+                  menu: (provided) => ({
+                    ...provided,
+                    zIndex: 9999,
+                    backgroundColor: "white",
+                  }),
+                  option: (provided, state) => ({
+                    ...provided,
+                    backgroundColor: state.isSelected ? "#1f49b6" : state.isFocused ? "#e6f0ff" : "white",
+                    color: state.isSelected ? "white" : "#1f49b6",
+                    cursor: "pointer",
+                  }),
+                  control: (provided) => ({
+                    ...provided,
+                    backgroundColor: "white",
+                    borderColor: "#b7c9e6",
+                  }),
+                }}
+              />
+            </Box>
 
             <Flex gap={3} flexWrap="wrap" align={{ base: "stretch", md: "center" }}>
               <Input
@@ -286,11 +342,15 @@ export default function EventsSearch() {
 
                         {event.tags?.length > 0 && (
                           <HStack spacing={2} flexWrap="wrap">
-                            {event.tags.map((tag) => (
-                              <Badge key={tag} colorScheme="purple">
-                                {tag}
-                              </Badge>
-                            ))}
+                            {event.tags.map((tag) => {
+                              const tagId = tag._id || tag;
+                              const tagName = typeof tag === "object" ? tag.name : tag;
+                              return (
+                                <Badge key={tagId} colorScheme="purple">
+                                  {tagName}
+                                </Badge>
+                              );
+                            })}
                           </HStack>
                         )}
                       </VStack>

@@ -17,6 +17,7 @@ import {
   Flex,
   Image,
 } from "@chakra-ui/react";
+import Select from "react-select";
 import { useNavigate } from "react-router-dom";
 import BackArrow from "../assets/backArrow";
 
@@ -40,7 +41,6 @@ export default function ModifyEvent() {
   const isEdit = Boolean(eventId);
 
 const organizerId = localStorage.getItem("organizerId") || null;
-const authToken = localStorage.getItem("authToken") || null;
 
   const [form, setForm] = useState({
     name: "",
@@ -49,6 +49,7 @@ const authToken = localStorage.getItem("authToken") || null;
     location: "",
     imageUrl: "",
     notifMessage: "",
+    tags: [],
   });
 
   const [loading, setLoading] = useState(false);
@@ -93,6 +94,7 @@ const authToken = localStorage.getItem("authToken") || null;
           location: data.location || "",
           imageUrl: data.imageUrl || "",
           notifMessage: data.notifMessage || "",
+          tags: (data.tags || []).map((t) => (t && (t._id || t)).toString()),
         });
       } catch (err) {
         setApiError(err.message || "Network error while loading event");
@@ -111,6 +113,31 @@ const authToken = localStorage.getItem("authToken") || null;
       [name]: value,
     }));
   };
+  // Available tags from backend (array of { _id, name, ... })
+  const [availableTags, setAvailableTags] = useState([]);
+  const [tagOptions, setTagOptions] = useState([]);
+
+  // Fetch tags once on mount
+  useEffect(() => {
+    let mounted = true;
+    const fetchTags = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/tags`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!mounted) return;
+        const arr = Array.isArray(data) ? data : [];
+        setAvailableTags(arr);
+        setTagOptions(arr.map((t) => ({ value: String(t._id), label: t.name })));
+      } catch (e) {
+        // ignore silently for now
+      }
+    };
+    fetchTags();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
   e.preventDefault();
@@ -127,6 +154,7 @@ const authToken = localStorage.getItem("authToken") || null;
     imageUrl: form.imageUrl || undefined,
     notifMessage: form.notifMessage || undefined,
     organizerId,   // still send this so backend links event to user
+    tags: form.tags,
   };
 
   try {
@@ -135,12 +163,15 @@ const authToken = localStorage.getItem("authToken") || null;
       : `${API_BASE}/api/event`;
     const method = isEdit ? "PUT" : "POST";
 
+
     const res = await fetch(url, {
-  method,
-  headers: { "Content-Type": "application/json" },
-  credentials: "include",
-  body: JSON.stringify(payload),
-      });
+      method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      credentials: "include", // Send cookies with request
+    });
 
     let data = null;
     const contentType = res.headers.get("content-type") || "";
@@ -295,6 +326,85 @@ const authToken = localStorage.getItem("authToken") || null;
               </VStack>
             </Box>
           </Box>
+
+
+          {/* TAGS SECTION */}
+          <Box mt={10}>
+            <Heading
+              as="h2"
+              size="lg"
+              mb={8}
+              fontFamily="'Lato', Helvetica"
+              fontWeight={700}
+              fontSize="32px"
+              color="white"
+            >
+              Tags
+            </Heading>
+
+            <Box
+              w="100%"
+              bg="#e6f0ff"
+              borderRadius="20px"
+              boxShadow="0px 4px 4px rgba(0,0,0,0.25)"
+              p={8}
+            >
+              <VStack align="stretch" spacing={4}>
+                <FormControl>
+                  <FormLabel
+                    fontFamily="'Inter', Helvetica"
+                    fontWeight={400}
+                    fontSize="16px"
+                    color="#0d2a73"
+                  >
+                    Select Tags
+                  </FormLabel>
+
+                  <Box>
+                    <Select
+                      options={tagOptions}
+                      isMulti
+                      isSearchable
+                      placeholder="Select or search tags..."
+                      value={tagOptions.filter((o) => (form.tags || []).includes(o.value))}
+                      onChange={(selected) => {
+                        const vals = Array.isArray(selected) ? selected.map((s) => String(s.value)) : [];
+                        setForm((prev) => ({ ...prev, tags: vals }));
+                      }}
+                      styles={{
+                        menu: (provided) => ({ ...provided, zIndex: 9999 }),
+                      }}
+                    />
+                  </Box>
+                </FormControl>
+                {/* Selected tags preview (labels) */}
+                {Array.isArray(form.tags) && form.tags.length > 0 && (
+                  <HStack spacing={3} wrap="wrap">
+                    {form.tags.map((tagId) => {
+                      const t = availableTags.find((a) => String(a._id) === String(tagId));
+                      const label = t ? t.name : tagId;
+                      return (
+                        <Flex
+                          key={tagId}
+                          align="center"
+                          bg="#1f49b6"
+                          color="white"
+                          px={3}
+                          py={1}
+                          borderRadius="full"
+                          fontSize="14px"
+                        >
+                          {label}
+                        </Flex>
+                      );
+                    })}
+                  </HStack>
+                )}
+              </VStack>
+            </Box>
+          </Box>
+
+
 
           {/* Other Sections */}
           {sectionData.map((section) => (

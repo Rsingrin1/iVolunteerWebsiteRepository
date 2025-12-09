@@ -14,6 +14,7 @@ import EventDetails from "./pages/EventDetails.jsx";   // 🔥 NEW
 import MyEventsVolunteer from "./pages/MyEventsVolunteer.jsx";
 import EventsSearch from "./pages/EventsSearch.jsx";
 import ReviewApplicants from "./pages/ReviewApplicants.jsx";
+import TagsPage from "./pages/TagsPage.jsx";
 
 
 export default function App() {
@@ -32,6 +33,7 @@ export default function App() {
       <Route path="/calendar" element={<EventsCalendar />} />
       <Route path="/MyEventsVolunteer" element={<MyEventsVolunteer />} />
       <Route path="/events/search" element={<EventsSearch />} />
+      <Route path="/tags" element={<TagsPage />} />
       {/* NEW EVENT DETAILS ROUTE */}
       <Route path="/event/:id" element={<EventDetails />} />
       <Route path="/event/:id/applicants" element={<ReviewApplicants />} />

@@ -16,7 +16,7 @@ export default function Home() {
     { name: "Example Mongo Page", path: "/exampleMongoHookup" },
     { name: "Landing Page", path: "/landingPage" },
     { name: "Event Search", path: "/events/search" },
-  
+    { name: "Tags Page", path: "/tags" },
     { name: "My Volunteer Events", path: "/MyEventsVolunteer" },
 
 
