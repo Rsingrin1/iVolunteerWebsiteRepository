@@ -41,6 +41,7 @@ import { connectDB } from "./config/db.js";
 
 import userRoute from "./routes/userRoute.js";
 import eventRoute from "./routes/eventRoute.js";
+import tagRoute from "./routes/tagRoute.js";
 
 dotenv.config();
 
@@ -78,6 +79,7 @@ app.get("/", (req, res) => {
 // ✔ API routes
 app.use("/api", userRoute);
 app.use("/api", eventRoute);
+app.use("/api", tagRoute);
 
 // ✔ Connect DB
 connectDB();

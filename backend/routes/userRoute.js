@@ -17,7 +17,7 @@ route.post("/user", create);
 route.get("/user", requireAuth, getUserById);
 route.get("/users", getAllUsers);
 route.put("/user", requireAuth, update);
-route.delete("/user", requireAuth, deleteUser);
+//route.delete("/user", requireAuth, deleteUser);
 
 // ⬇️ NEW login endpoint
 route.post("/login", login);

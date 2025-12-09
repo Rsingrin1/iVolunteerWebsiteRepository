@@ -57,7 +57,7 @@ export const createEvent = async (req, res) => {
     organizer.events.push(savedEvent._id);
     await organizer.save();
 
-    res.status(200).json(savedEvent);
+    res.status(201).json(savedEvent);
   } catch (error) {
     res.status(500).json({ errorMessage: error.message });
   }
@@ -67,10 +67,9 @@ export const createEvent = async (req, res) => {
 // GET /api/events
 export const getAllEvents = async (req, res) => {
   try {
-    const events = await Events.find().populate(
-      "organizer",
-      "username email userType"
-    );
+    const events = await Events.find()
+      .populate("organizer", "username email userType")
+      .populate("tags", "name description");
     if (!events || events.length === 0) {
       return res.status(404).json({ message: "No events found." });
     }
@@ -85,10 +84,9 @@ export const getAllEvents = async (req, res) => {
 export const getEventById = async (req, res) => {
   try {
     const id = req.params.id;
-    const eventExist = await Events.findById(id).populate(
-      "organizer",
-      "username email userType"
-    );
+    const eventExist = await Events.findById(id)
+      .populate("organizer", "username email userType")
+      .populate("tags", "name description");
     if (!eventExist) {
       return res.status(400).json({ message: "Event not found." });
     }
@@ -115,7 +113,13 @@ export const getEventsByOrganizer = async (req, res) => {
         .json({ message: "Cannot view events for another organizer." });
     }
 
-    const organizer = await User.findById(userId).populate("events");
+    const organizer = await User.findById(userId).populate({
+      path: "events",
+      populate: {
+        path: "tags",
+        select: "name description",
+      },
+    });
     if (!organizer) {
       return res.status(404).json({ message: "Organizer not found." });
     }
@@ -339,7 +343,9 @@ export const getMyVolunteerEvents = async (req, res) => {
     // events where user is applicant or participant
     const events = await Events.find({
       $or: [{ applicants: userId }, { participants: userId }],
-    }).populate("organizer", "username email userType");
+    })
+      .populate("organizer", "username email userType")
+      .populate("tags", "name description");
 
     return res.status(200).json(events || []);
   } catch (error) {
