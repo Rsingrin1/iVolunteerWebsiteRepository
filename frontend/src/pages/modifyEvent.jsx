@@ -42,7 +42,6 @@ export default function ModifyEvent() {
   const isEdit = Boolean(eventId);
 
 const organizerId = localStorage.getItem("organizerId") || null;
-const authToken = localStorage.getItem("authToken") || null;
 
   const [form, setForm] = useState({
     name: "",
@@ -51,6 +50,7 @@ const authToken = localStorage.getItem("authToken") || null;
     location: "",
     imageUrl: "",
     notifMessage: "",
+    tags: [],
   });
 
   const [loading, setLoading] = useState(false);
@@ -93,6 +93,7 @@ const authToken = localStorage.getItem("authToken") || null;
           location: data.location || "",
           imageUrl: data.imageUrl || "",
           notifMessage: data.notifMessage || "",
+          tags: data.tags || [],
         });
       } catch (err) {
         setApiError(err.message || "Network error while loading event");
@@ -112,12 +113,33 @@ const authToken = localStorage.getItem("authToken") || null;
     }));
   };
 
+
+  const [tagInput, setTagInput] = useState("");
+
+const handleAddTag = (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    const trimmed = tagInput.trim();
+    if (trimmed && !form.tags.includes(trimmed)) {
+      setForm(prev => ({ ...prev, tags: [...prev.tags, trimmed] }));
+    }
+    setTagInput("");
+  }
+};
+
+const removeTag = (tagToRemove) => {
+  setForm(prev => ({
+    ...prev,
+    tags: prev.tags.filter(tag => tag !== tagToRemove)
+  }));
+};
+
   const handleSubmit = async (e) => {
   e.preventDefault();
   setLoading(true);
   setApiError(null);
 
-  if (!authToken) {
+  if (!organizerId) {
     setApiError("You must be logged in as an organizer to save events.");
     setLoading(false);
     return;
@@ -137,6 +159,7 @@ const authToken = localStorage.getItem("authToken") || null;
     imageUrl: form.imageUrl || undefined,
     notifMessage: form.notifMessage || undefined,
     organizerId,   // still send this so backend links event to user
+    tags: form.tags,
   };
 
   try {
@@ -145,13 +168,14 @@ const authToken = localStorage.getItem("authToken") || null;
       : `${API_BASE}/api/event`;
     const method = isEdit ? "PUT" : "POST";
 
+
     const res = await fetch(url, {
       method,
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${authToken}`,   // ⬅️ IMPORTANT
       },
       body: JSON.stringify(payload),
+      credentials: "include", // Send cookies with request
     });
 
     let data = null;
@@ -309,6 +333,82 @@ const authToken = localStorage.getItem("authToken") || null;
               </VStack>
             </Box>
           </Box>
+
+
+          {/* TAGS SECTION */}
+          <Box mt={10}>
+            <Heading
+              as="h2"
+              size="lg"
+              mb={8}
+              fontFamily="'Lato', Helvetica"
+              fontWeight={700}
+              fontSize="32px"
+              color="white"
+            >
+              Tags
+            </Heading>
+
+            <Box
+              w="100%"
+              bg="#e6f0ff"
+              borderRadius="20px"
+              boxShadow="0px 4px 4px rgba(0,0,0,0.25)"
+              p={8}
+            >
+              <VStack align="stretch" spacing={4}>
+                <FormControl>
+                  <FormLabel
+                    fontFamily="'Inter', Helvetica"
+                    fontWeight={400}
+                    fontSize="16px"
+                    color="#0d2a73"
+                  >
+                    Add Tags (press Enter)
+                  </FormLabel>
+
+                  <Input
+                    placeholder="e.g. Cleanup, Outdoors, Kids, Food"
+                    bg="white"
+                    borderColor="#b7c9e6"
+                    fontFamily="'Inter', Helvetica"
+                    fontSize="16px"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={handleAddTag}
+                  />
+                </FormControl>
+
+                {/* Tags display */}
+                <HStack spacing={3} wrap="wrap">
+                  {form.tags.map((tag) => (
+                    <Flex
+                      key={tag}
+                      align="center"
+                      bg="#1f49b6"
+                      color="white"
+                      px={3}
+                      py={1}
+                      borderRadius="full"
+                      fontSize="14px"
+                    >
+                      {tag}
+                      <Box
+                        as="button"
+                        ml={2}
+                        fontWeight="bold"
+                        onClick={() => removeTag(tag)}
+                      >
+                        ×
+                      </Box>
+                    </Flex>
+                  ))}
+                </HStack>
+              </VStack>
+            </Box>
+          </Box>
+
+
 
           {/* Other Sections */}
           {sectionData.map((section) => (

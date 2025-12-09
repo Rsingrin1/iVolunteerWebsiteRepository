@@ -24,7 +24,9 @@ const eventSchema = new mongoose.Schema({
     type: Date,
   },
   tags: {
-    type: [String],
+    type: [Schema.Types.ObjectId],
+    ref: "Tag",
+    default: [],
   },
   imageUrl: {
     type: String,
