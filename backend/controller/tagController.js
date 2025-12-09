@@ -3,10 +3,7 @@ import Tag from "../model/tagModel.js";
 export const getAllTags = async (req, res) => {
   try {
     const tags = await Tag.find();
-    if (!tags || tags.length === 0) {
-      return res.status(404).json({ message: "No tags found." });
-    }
-    res.status(200).json(tags);
+    res.status(200).json(tags || []);
   } catch (error) {
     res.status(500).json({ errorMessage: error.message });
   }
@@ -25,7 +22,13 @@ export const createTag = async (req, res) => {
       return res.status(400).json({ message: "Tag already exists." });
     }
 
-    const tag = new Tag({ name, slug, description });
+    // Only include slug if provided and non-empty
+    const tagData = { name, description };
+    if (slug && slug.trim() !== "") {
+      tagData.slug = slug;
+    }
+
+    const tag = new Tag(tagData);
     const saved = await tag.save();
     res.status(201).json(saved);
   } catch (error) {

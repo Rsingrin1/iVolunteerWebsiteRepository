@@ -17,6 +17,7 @@ import {
   Flex,
   Image,
 } from "@chakra-ui/react";
+import Select from "react-select";
 import { useNavigate } from "react-router-dom";
 import BackArrow from "../assets/backArrow";
 import SiteHeader from "../assets/SiteHeader";
@@ -93,7 +94,7 @@ const organizerId = localStorage.getItem("organizerId") || null;
           location: data.location || "",
           imageUrl: data.imageUrl || "",
           notifMessage: data.notifMessage || "",
-          tags: data.tags || [],
+          tags: (data.tags || []).map((t) => (t && (t._id || t)).toString()),
         });
       } catch (err) {
         setApiError(err.message || "Network error while loading event");
@@ -112,27 +113,31 @@ const organizerId = localStorage.getItem("organizerId") || null;
       [name]: value,
     }));
   };
+  // Available tags from backend (array of { _id, name, ... })
+  const [availableTags, setAvailableTags] = useState([]);
+  const [tagOptions, setTagOptions] = useState([]);
 
-
-  const [tagInput, setTagInput] = useState("");
-
-const handleAddTag = (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    const trimmed = tagInput.trim();
-    if (trimmed && !form.tags.includes(trimmed)) {
-      setForm(prev => ({ ...prev, tags: [...prev.tags, trimmed] }));
-    }
-    setTagInput("");
-  }
-};
-
-const removeTag = (tagToRemove) => {
-  setForm(prev => ({
-    ...prev,
-    tags: prev.tags.filter(tag => tag !== tagToRemove)
-  }));
-};
+  // Fetch tags once on mount
+  useEffect(() => {
+    let mounted = true;
+    const fetchTags = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/tags`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!mounted) return;
+        const arr = Array.isArray(data) ? data : [];
+        setAvailableTags(arr);
+        setTagOptions(arr.map((t) => ({ value: String(t._id), label: t.name })));
+      } catch (e) {
+        // ignore silently for now
+      }
+    };
+    fetchTags();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
   e.preventDefault();
@@ -364,46 +369,49 @@ const removeTag = (tagToRemove) => {
                     fontSize="16px"
                     color="#0d2a73"
                   >
-                    Add Tags (press Enter)
+                    Select Tags
                   </FormLabel>
 
-                  <Input
-                    placeholder="e.g. Cleanup, Outdoors, Kids, Food"
-                    bg="white"
-                    borderColor="#b7c9e6"
-                    fontFamily="'Inter', Helvetica"
-                    fontSize="16px"
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyDown={handleAddTag}
-                  />
+                  <Box>
+                    <Select
+                      options={tagOptions}
+                      isMulti
+                      isSearchable
+                      placeholder="Select or search tags..."
+                      value={tagOptions.filter((o) => (form.tags || []).includes(o.value))}
+                      onChange={(selected) => {
+                        const vals = Array.isArray(selected) ? selected.map((s) => String(s.value)) : [];
+                        setForm((prev) => ({ ...prev, tags: vals }));
+                      }}
+                      styles={{
+                        menu: (provided) => ({ ...provided, zIndex: 9999 }),
+                      }}
+                    />
+                  </Box>
                 </FormControl>
-
-                {/* Tags display */}
-                <HStack spacing={3} wrap="wrap">
-                  {form.tags.map((tag) => (
-                    <Flex
-                      key={tag}
-                      align="center"
-                      bg="#1f49b6"
-                      color="white"
-                      px={3}
-                      py={1}
-                      borderRadius="full"
-                      fontSize="14px"
-                    >
-                      {tag}
-                      <Box
-                        as="button"
-                        ml={2}
-                        fontWeight="bold"
-                        onClick={() => removeTag(tag)}
-                      >
-                        ×
-                      </Box>
-                    </Flex>
-                  ))}
-                </HStack>
+                {/* Selected tags preview (labels) */}
+                {Array.isArray(form.tags) && form.tags.length > 0 && (
+                  <HStack spacing={3} wrap="wrap">
+                    {form.tags.map((tagId) => {
+                      const t = availableTags.find((a) => String(a._id) === String(tagId));
+                      const label = t ? t.name : tagId;
+                      return (
+                        <Flex
+                          key={tagId}
+                          align="center"
+                          bg="#1f49b6"
+                          color="white"
+                          px={3}
+                          py={1}
+                          borderRadius="full"
+                          fontSize="14px"
+                        >
+                          {label}
+                        </Flex>
+                      );
+                    })}
+                  </HStack>
+                )}
               </VStack>
             </Box>
           </Box>

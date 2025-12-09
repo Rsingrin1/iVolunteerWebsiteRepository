@@ -204,11 +204,15 @@ export default function EventDetails() {
 
               {event.tags?.length > 0 && (
                 <HStack spacing={2} flexWrap="wrap" mt={2}>
-                  {event.tags.map((tag) => (
-                    <Badge key={tag} colorScheme="purple">
-                      {tag}
-                    </Badge>
-                  ))}
+                  {event.tags.map((tag) => {
+                    const tagId = tag._id || tag;
+                    const tagName = typeof tag === "object" ? tag.name : tag;
+                    return (
+                      <Badge key={tagId} colorScheme="purple">
+                        {tagName}
+                      </Badge>
+                    );
+                  })}
                 </HStack>
               )}
             </VStack>

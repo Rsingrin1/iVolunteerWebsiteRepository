@@ -1,8 +1,8 @@
 import express from "express";
 import {
-	getAllTags,
-	createTag,
-	deleteTag,
+getAllTags,
+createTag,
+deleteTag,
 } from "../controller/tagController.js";
 
 const route = express.Router();
