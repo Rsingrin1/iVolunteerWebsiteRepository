@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -31,6 +32,8 @@ const formFields = [
 const API_BASE = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
 export default function OrganizerSignUp() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     email: "",
     username: "",
@@ -48,6 +51,55 @@ export default function OrganizerSignUp() {
       ...prev,
       [name]: value,
     }));
+  }
+
+  // Reuse login flow to auto-sign-in after signup
+  async function doLogin(username, password, redirectPath) {
+    setError(null);
+    setMessage(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/login`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      let data = null;
+      const contentType = res.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        try {
+          data = await res.json();
+        } catch {
+          data = null;
+        }
+      }
+
+      if (!res.ok) {
+        const msg = (data && (data.message || data.errorMessage)) || `Login failed with status ${res.status}`;
+        setError(msg);
+        throw new Error(msg);
+      }
+
+      if (!data || !data.user) {
+        const msg = "Unexpected login response from server.";
+        setError(msg);
+        throw new Error(msg);
+      }
+
+      const user = data.user;
+      localStorage.setItem("currentUser", JSON.stringify(user));
+      if (user.userType === "organizer") {
+        localStorage.setItem("organizerId", user.id);
+      } else {
+        localStorage.removeItem("organizerId");
+      }
+
+      setMessage(data.message || "Login successful.");
+      navigate(redirectPath || "/Profile");
+    } catch (err) {
+      throw err;
+    }
   }
 
   async function handleSubmit(e) {
@@ -93,12 +145,13 @@ export default function OrganizerSignUp() {
         );
       } else {
         setMessage((data && data.message) || "User created successfully.");
-        setFormData({
-          email: "",
-          username: "",
-          password: "",
-          confirmPassword: "",
-        });
+        // attempt to auto-login the new user
+        try {
+          await doLogin(username, password, "/MyEventsOrganizer");
+        } catch (loginErr) {
+          // still clear the form and show message; login error shown via doLogin
+          setFormData({ email: "", username: "", password: "", confirmPassword: "" });
+        }
       }
     } catch (err) {
       setError(err.message || "Network error");
