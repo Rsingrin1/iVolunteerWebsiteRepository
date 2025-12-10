@@ -41,6 +41,7 @@ import nodemailer from "nodemailer";
 
 import cookieParser from "cookie-parser"; // ✔ parse cookies
 import { connectDB } from "./config/db.js";
+import { generateWelcomeEmail } from "./emailTemplate.js";
 
 import userRoute from "./routes/userRoute.js";
 import eventRoute from "./routes/eventRoute.js";
@@ -152,11 +153,13 @@ transporter.sendMail(mailOptions, (error, info) => {
 app.post('/send-email', async (req, res) => {
     const { email, username } = req.body;
     
+    const htmlTemplate = generateWelcomeEmail(username, email);
+    
     const mailOptions = {
         from: process.env.GMAIL_USER,
         to: email,
         subject: 'Welcome to iVolunteer!',
-        text: `Welcome to iVolunteer, ${username}! Your account has been registered.`
+        html: htmlTemplate
     };
 
     try {
