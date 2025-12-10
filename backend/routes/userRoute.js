@@ -7,6 +7,7 @@ import {
   getAllUsers,
   update,
   deleteUser,
+  deleteUserById,
   login,
 } from "../controller/userController.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
@@ -17,7 +18,11 @@ route.post("/user", create);
 route.get("/user", requireAuth, getUserById);
 route.get("/users", getAllUsers);
 route.put("/user", requireAuth, update);
+// route to delete the current authenticated user
 //route.delete("/user", requireAuth, deleteUser);
+
+// Admin/dev route: delete a user by id
+route.delete("/users/:id", deleteUserById);
 
 // ⬇️ NEW login endpoint
 route.post("/login", login);

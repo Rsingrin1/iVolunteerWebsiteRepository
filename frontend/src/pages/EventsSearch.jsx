@@ -30,6 +30,10 @@ export default function EventsSearch() {
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState(null);
 
+  // fetched list of all tags from backend (so we show every tag, not only tags used by loaded events)
+  const [availableTagNames, setAvailableTagNames] = useState([]);
+  const [tagOptions, setTagOptions] = useState([]);
+
   // filters
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
@@ -61,16 +65,25 @@ export default function EventsSearch() {
     loadEvents();
   }, []);
 
-  const availableTags = Array.from(
-    new Set(
-      events.flatMap((ev) => {
-        if (!Array.isArray(ev.tags)) return [];
-        return ev.tags.map((t) => (typeof t === "object" ? t.name : t));
-      })
-    )
-  );
-
-  const tagOptions = availableTags.map((name) => ({ value: name, label: name }));
+  // fetch all tags once so the filter shows every tag defined in the system
+  useEffect(() => {
+    let mounted = true;
+    const fetchTags = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/tags`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!mounted) return;
+        const names = Array.isArray(data) ? data.map((t) => t.name) : [];
+        setAvailableTagNames(names);
+        setTagOptions(names.map((name) => ({ value: name, label: name })));
+      } catch (e) {
+        // ignore
+      }
+    };
+    fetchTags();
+    return () => (mounted = false);
+  }, []);
 
   const filteredEvents = events
     .filter((ev) => {

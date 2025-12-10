@@ -18,6 +18,17 @@ const User = () => {
     fetchData();
   }, []);
 
+  const deleteUser = async (id) => {
+    if (!confirm("Delete this user?")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/users/${id}`);
+      setUsers((prev) => prev.filter((u) => u._id !== id));
+    } catch (err) {
+      console.error("Error deleting user", err);
+      alert(err.response?.data?.message || err.message || "Delete failed");
+    }
+  };
+
 
   return (
     <div className="userTable">
@@ -29,8 +40,8 @@ const User = () => {
             <th scope="col">Name</th>
             <th scope="col">Email</th>
             <th scope="col">userID</th>
-            <th scope="col">Hash</th>
             <th scope="col">User Type</th>
+            <th scope="col">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -41,8 +52,12 @@ const User = () => {
                 <td>{user.username}</td>
                 <td>{user.email} </td>
                 <td>{user._id}</td>
-                <td>{user.hash}</td>
                 <td>{user.userType || "N/A"}</td>
+                <td>
+                  <button className="btn btn-danger" onClick={() => deleteUser(user._id)}>
+                    Delete
+                  </button>
+                </td>
               </tr>
             );
           })}

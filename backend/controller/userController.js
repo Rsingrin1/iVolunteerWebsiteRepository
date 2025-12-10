@@ -98,6 +98,26 @@ export const deleteUser = async (req, res) => {
   }
 };
 
+// Admin-style delete by id (used by dev tooling). No auth enforced here;
+// If you want to restrict this, add `requireAuth` or checks.
+export const deleteUserById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!id) {
+      return res.status(400).json({ message: "User id is required." });
+    }
+    const userExist = await User.findById(id);
+    if (!userExist) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    await User.findByIdAndDelete(id);
+    return res.status(200).json({ message: "User deleted successfully.", id });
+  } catch (error) {
+    console.error("deleteUserById error:", error);
+    return res.status(500).json({ errorMessage: error.message });
+  }
+};
+
 export const login = async (req, res) => {
   try {
     const { username, email, password } = req.body;

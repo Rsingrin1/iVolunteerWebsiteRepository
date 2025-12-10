@@ -21,7 +21,7 @@ export default function SiteHeader() {
     localStorage.removeItem("authToken");
     localStorage.removeItem("currentUser");
     localStorage.removeItem("organizerId");
-    navigate("/Login");
+    navigate("/");
   };
 
   // Decide default "My Events" route based on role
@@ -30,7 +30,7 @@ export default function SiteHeader() {
       ? "/MyEventsOrganizer"
       : userType === "volunteer"
       ? "/MyEventsVolunteer"
-      : "/Login";
+      : "/";
 
   return (
     <Box
