@@ -152,6 +152,19 @@ export default function VolunteerSignUp() {
         } catch (loginErr) {
           setFormData({ email: "", username: "", password: "", confirmPassword: "" });
         }
+        setFormData({
+          email: "",
+          username: "",
+          password: "",
+          confirmPassword: "",
+        });
+        // Send welcome email (account registered)
+        await fetch(`${API_BASE}/send-email`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, username }),
+            });
+            setMessage("User created successfully. Welcome email sent!");
       }
     } catch (err) {
       setError(err.message || "Network error");
