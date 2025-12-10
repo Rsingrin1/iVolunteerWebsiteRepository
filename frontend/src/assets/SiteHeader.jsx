@@ -80,6 +80,15 @@ export default function SiteHeader() {
             My Events
           </ChakraLink>
 
+          <ChakraLink
+            as={RouterLink}
+            to="/calendar"
+            fontSize="sm"
+            color="gray.700"
+          >
+            Calendar
+          </ChakraLink>
+
           {isLoggedIn && (
             <ChakraLink
               as={RouterLink}
