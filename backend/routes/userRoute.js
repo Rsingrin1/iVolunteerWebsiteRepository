@@ -9,6 +9,8 @@ import {
   deleteUser,
   deleteUserById,
   login,
+  passwordResetRequest,
+  passwordReset,
 } from "../controller/userController.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
 
@@ -26,5 +28,9 @@ route.delete("/users/:id", deleteUserById);
 
 // ⬇️ NEW login endpoint
 route.post("/login", login);
+
+// ⬇️ Password reset endpoints
+route.post("/password-reset-request", passwordResetRequest);
+route.post("/password-reset", passwordReset);
 
 export default route;

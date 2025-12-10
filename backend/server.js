@@ -38,10 +38,11 @@ import dotenv from "dotenv";
 import cors from "cors";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
+import jwt from "jsonwebtoken";
+import { generateWelcomeEmail } from "./emailTemplate.js";
 
 import cookieParser from "cookie-parser"; // ✔ parse cookies
 import { connectDB } from "./config/db.js";
-import { generateWelcomeEmail } from "./emailTemplate.js";
 
 import userRoute from "./routes/userRoute.js";
 import eventRoute from "./routes/eventRoute.js";

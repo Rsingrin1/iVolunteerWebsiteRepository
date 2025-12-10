@@ -174,3 +174,40 @@ export const generateWelcomeEmail = (username, email) => {
     </html>
   `;
 };
+
+export const generatePasswordResetEmail = (username, resetUrl) => {
+    return `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Password Reset</title>
+                <style>
+                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5; margin:0; padding:0 }
+                        .container { max-width:600px; margin:20px auto; background:#fff; border-radius:8px; overflow:hidden; }
+                        .header { background: linear-gradient(135deg, #1f49b6 0%, #2c5aa0 100%); color:#fff; padding:30px 20px; text-align:center }
+                        .content { padding:30px; color:#333 }
+                        .cta { display:inline-block; background:#1f49b6; color:#fff !important; padding:12px 20px; border-radius:6px; text-decoration:none; font-weight:600 }
+                        .footer { padding:16px; text-align:center; font-size:12px; color:#888 }
+                </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Password Reset Request</h1>
+                </div>
+                <div class="content">
+                    <p>Hello ${username || ''},</p>
+                    <p>We received a request to reset your password. If you made this request, click the button below to choose a new password. This link will expire in one hour.</p>
+                    <p style="text-align:center;margin:24px 0;"><a class="cta" href="${resetUrl}">Reset your password</a></p>
+                    <p>If you didn't request a password reset, you can safely ignore this email.</p>
+                </div>
+                <div class="footer">
+                    <p>&copy; 2025 iVolunteer. If you need help, reply to this email.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+};

@@ -10,6 +10,7 @@ import {
   Text,
   Alert,
   AlertIcon,
+  Link,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 
@@ -146,6 +147,12 @@ export default function InputUser() {
           >
             Submit
           </Button>
+
+          <Box textAlign="center" w="full">
+            <Link color="blue.500" onClick={() => navigate("/forgot-password")}>
+              Forgot Password?
+            </Link>
+          </Box>
         </VStack>
       </Box>
     </Box>
