@@ -33,7 +33,12 @@ const TagsPage = () => {
     if (!form.name || form.name.trim() === "") return;
     setCreating(true);
     try {
-      const res = await axios.post("http://localhost:5000/api/tags", form);
+      // Only send non-empty optional fields to avoid creating empty-string slugs
+      const payload = { name: form.name.trim() };
+      if (form.slug && form.slug.trim() !== "") payload.slug = form.slug.trim();
+      if (form.description && form.description.trim() !== "") payload.description = form.description.trim();
+
+      const res = await axios.post("http://localhost:5000/api/tags", payload);
       setTags((prev) => [res.data, ...prev]);
       setForm({ name: "", slug: "", description: "" });
     } catch (err) {

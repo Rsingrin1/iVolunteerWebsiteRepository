@@ -54,7 +54,8 @@ export default function Profile() {
           <VStack spacing={8} w="full" px={4}>
             <Avatar
               size="2xl"
-              src="https://c.animaapp.com/mi89fn69ZHusC2/img/shape.png"
+              src={user.imageUrl}
+              alt={`Profile picture of ${user.username}`}
               name={user.username}
               w="242.3px"
               h="242.3px"
