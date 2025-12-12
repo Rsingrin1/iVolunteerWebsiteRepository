@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Box,
   Button,
@@ -13,6 +13,13 @@ import {
   VStack,
   HStack,
   Spinner,
+  AlertDialog,
+  AlertDialogOverlay,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogBody,
+  AlertDialogFooter,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import Profile from "../assets/profileMenu";
@@ -27,6 +34,11 @@ export default function MyEventsOrganizer() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState(null);
+
+  // Cancel Event = Delete dialog control
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = useRef();
+  const [deletingEvent, setDeletingEvent] = useState(null);
 
   const organizerId =
     localStorage.getItem("organizerId") ||
@@ -51,6 +63,48 @@ export default function MyEventsOrganizer() {
 
   const handleReviewApplicants = (id) => {
     navigate(`/event/${id}/applicants`);
+  };
+
+  const handleOpenDelete = (event) => {
+    setDeletingEvent(event);
+    onOpen();
+  };
+
+  const closeDelete = () => {
+    setDeletingEvent(null);
+    onClose();
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingEvent) return;
+    setLoading(true);
+    setApiError(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/delete/event/${deletingEvent._id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      let data = null;
+      const contentType = res.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        try {
+          data = await res.json();
+        } catch {}
+      }
+
+      if (!res.ok) {
+        setApiError((data && (data.message || data.errorMessage)) || `Delete failed (status ${res.status})`);
+        return;
+      }
+
+      setEvents((prev) => prev.filter((e) => e._id !== deletingEvent._id));
+      closeDelete();
+    } catch (err) {
+      setApiError(err.message || "Network error while deleting event.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -341,6 +395,26 @@ export default function MyEventsOrganizer() {
                             Review Applicants
                           </Text>
                         </Button>
+
+                        <Button
+                          bg="#ff4d4f"
+                          color="white"
+                          borderRadius="lg"
+                          px={3}
+                          py={3}
+                          h="auto"
+                          _hover={{ bg: "#ff4d4f", opacity: 0.9 }}
+                          onClick={() => handleOpenDelete(event)}
+                        >
+                          <Text
+                            fontFamily="Inter, Helvetica"
+                            fontWeight={400}
+                            fontSize="16px"
+                            lineHeight="100%"
+                          >
+                            Cancel Event
+                          </Text>
+                        </Button>
                       </HStack>
                     </Flex>
                   </Flex>
@@ -350,6 +424,34 @@ export default function MyEventsOrganizer() {
           })}
         </VStack>
       </Container>
+
+      {/* Cancel Event confirmation dialog */}
+      <AlertDialog
+        isOpen={isOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={closeDelete}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Cancel Event
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Are you sure you want to cancel "{deletingEvent?.name}"? This will notify participants and cannot be undone.
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={closeDelete} variant="ghost">
+                Keep Event
+              </Button>
+              <Button colorScheme="red" onClick={handleDeleteConfirm} ml={3}>
+                Cancel Event
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
 
       <style>
         {`

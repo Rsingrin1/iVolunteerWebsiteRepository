@@ -25,7 +25,6 @@ const buildUpdateMessage = (event) => {
       <p style="margin-top:18px; color:#555;">Please check the event page for details.</p>
     </div>
   `;
-
   return { subject, text, html };
 };
 
@@ -38,7 +37,7 @@ export const sendEventUpdateEmails = async (event, participantUsers = []) => {
   const sendPromises = participantUsers.map((u) => {
     if (!u || !u.email) return Promise.resolve(null);
     const mailOptions = {
-      from: process.env.GMAIL_USER,
+      from: `iVolunteer <${process.env.GMAIL_USER}>`,
       to: u.email,
       subject,
       text,
@@ -46,6 +45,47 @@ export const sendEventUpdateEmails = async (event, participantUsers = []) => {
     };
     return transporter.sendMail(mailOptions).catch((err) => {
       console.error('Error sending update email to', u.email, err && err.message);
+      return null;
+    });
+  });
+
+  const results = await Promise.all(sendPromises);
+  const sent = results.filter(Boolean).length;
+  return { sent, total: participantUsers.length };
+};
+
+const buildCancellationMessage = (event) => {
+  const dateStr = event.date ? new Date(event.date).toLocaleString() : 'TBD';
+  const location = event.location || 'TBD';
+  const subject = `Cancellation: ${event.name} has been cancelled`;
+  const text = `The event "${event.name}" scheduled for ${dateStr} at ${location} has been cancelled.\n\n`;
+  const html = `
+    <div style="font-family: Arial, Helvetica, sans-serif; color: #111;">
+      <p>The event <strong>${event.name}</strong> scheduled for <strong>${dateStr}</strong> at <strong>${location}</strong> has been <strong>cancelled</strong>.</p>
+      <p style="margin-top:12px; color:#555;">We apologize for the inconvenience. Please contact the organizer if you have questions.</p>
+    </div>
+  `;
+
+  return { subject, text, html };
+};
+
+export const sendEventCancellationEmails = async (event, participantUsers = []) => {
+  if (!participantUsers || participantUsers.length === 0) return { sent: 0, total: 0 };
+
+  const transporter = createTransporter();
+  const { subject, text, html } = buildCancellationMessage(event);
+
+  const sendPromises = participantUsers.map((u) => {
+    if (!u || !u.email) return Promise.resolve(null);
+    const mailOptions = {
+      from: `iVolunteer <${process.env.GMAIL_USER}>`,
+      to: u.email,
+      subject,
+      text,
+      html,
+    };
+    return transporter.sendMail(mailOptions).catch((err) => {
+      console.error('Error sending cancellation email to', u.email, err && err.message);
       return null;
     });
   });

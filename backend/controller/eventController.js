@@ -3,7 +3,7 @@
 import Events from "../model/eventModel.js";
 import User from "../model/userModel.js";
 import mongoose from "mongoose";
-import { sendEventUpdateEmails } from "../emailHelpers.js";
+import { sendEventUpdateEmails, sendEventCancellationEmails } from "../emailHelpers.js";
 
 // CREATE EVENT
 // POST /api/event
@@ -206,6 +206,18 @@ export const deleteEvent = async (req, res) => {
       return res
         .status(403)
         .json({ message: "You are not allowed to delete this event." });
+    }
+
+    // notify participants about cancellation (best-effort)
+    try {
+      const participantIds = Array.isArray(eventExist.participants) ? eventExist.participants : [];
+      if (participantIds.length > 0) {
+        const participants = await User.find({ _id: { $in: participantIds } }).select('email username');
+        const result = await sendEventCancellationEmails(eventExist, participants);
+        console.log(`Event cancellation emails sent: ${result.sent}/${result.total}`);
+      }
+    } catch (err) {
+      console.error('Error sending cancellation emails:', err && err.message);
     }
 
     await User.updateMany({ events: id }, { $pull: { events: id } });
