@@ -3,6 +3,7 @@
 import Events from "../model/eventModel.js";
 import User from "../model/userModel.js";
 import mongoose from "mongoose";
+import { sendEventUpdateEmails } from "../emailHelpers.js";
 
 // CREATE EVENT
 // POST /api/event
@@ -149,7 +150,39 @@ export const updateEvent = async (req, res) => {
         .json({ message: "You are not allowed to update this event." });
     }
 
-    await Events.findByIdAndUpdate(id, req.body, { new: true });
+    // update and get the new event document
+    const updatedEvent = await Events.findByIdAndUpdate(id, req.body, { new: true });
+
+    // detect changes to date or location
+    let dateChanged = false;
+    let locationChanged = false;
+    try {
+      if (req.body.date) {
+        const newDate = new Date(req.body.date).toISOString();
+        const oldDate = eventExist.date ? new Date(eventExist.date).toISOString() : null;
+        dateChanged = oldDate !== newDate;
+      }
+      if (Object.prototype.hasOwnProperty.call(req.body, 'location')) {
+        const newLoc = (req.body.location || "").toString();
+        const oldLoc = (eventExist.location || "").toString();
+        locationChanged = oldLoc !== newLoc;
+      }
+    } catch (e) {
+      console.error('Error comparing event fields for changes:', e && e.message);
+    }
+
+    if (dateChanged || locationChanged) {
+      try {
+        const participantIds = Array.isArray(eventExist.participants) ? eventExist.participants : [];
+        if (participantIds.length > 0) {
+          const participants = await User.find({ _id: { $in: participantIds } }).select('email username');
+          const result = await sendEventUpdateEmails(updatedEvent, participants);
+          console.log(`Event update emails sent: ${result.sent}/${result.total}`);
+        }
+      } catch (err) {
+        console.error('Error sending event update emails:', err && err.message);
+      }
+    }
 
     res.status(200).json({ message: "Event updated successfully." });
   } catch (error) {

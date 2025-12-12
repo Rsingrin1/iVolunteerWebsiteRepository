@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -54,9 +54,6 @@ const organizerId = localStorage.getItem("organizerId") || null;
     tags: [],
   });
 
-  // Preserve original date/location for change detection when editing
-  const originalRef = useRef({ date: "", location: "" });
-
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState(null);
 
@@ -99,12 +96,6 @@ const organizerId = localStorage.getItem("organizerId") || null;
           notifMessage: data.notifMessage || "",
           tags: (data.tags || []).map((t) => (t && (t._id || t)).toString()),
         });
-
-        // store original values (datetime-local format used in form.date)
-        originalRef.current = {
-          date: data.date ? data.date.slice(0, 16) : "",
-          location: data.location || "",
-        };
       } catch (err) {
         setApiError(err.message || "Network error while loading event");
       } finally {
@@ -210,29 +201,7 @@ const organizerId = localStorage.getItem("organizerId") || null;
       return;
     }
 
-    //NOTIFICATIONS: Check for relevant updates (date/location changes)
-    try {
-      if (isEdit && originalRef && originalRef.current) {
-        const origDate = originalRef.current.date || "";
-        const origLoc = originalRef.current.location || "";
-        const currDate = form.date || "";
-        const currLoc = form.location || "";
-        if (origDate !== currDate || origLoc !== currLoc) {
-          console.log("changes to event have been saved");
-          //ADD NOTIFICATION SENDING LOGIC HERE
-          
-        } else {
-          console.log("no time or location changes were made");
-        }
-      } else {
-        // creating new event or no original data — treat as changes saved
-        console.log("changes to event have been saved");
-      }
-    } catch (e) {
-      console.error("Error checking changes:", e);
-    }
-
-    //Success - navigate back to My Events (Organizer)
+    // Success → go back to My Events
     navigate("/MyEventsOrganizer");
   } catch (err) {
     setApiError(err.message || "Network error while saving event");
