@@ -15,6 +15,8 @@ import MyEventsVolunteer from "./pages/MyEventsVolunteer.jsx";
 import EventsSearch from "./pages/EventsSearch.jsx";
 import ReviewApplicants from "./pages/ReviewApplicants.jsx";
 import TagsPage from "./pages/TagsPage.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";   // 🔥 NEW
+import ResetPassword from "./pages/ResetPassword.jsx";      // 🔥 NEW
 
 
 export default function App() {
@@ -37,6 +39,9 @@ export default function App() {
       {/* NEW EVENT DETAILS ROUTE */}
       <Route path="/event/:id" element={<EventDetails />} />
       <Route path="/event/:id/applicants" element={<ReviewApplicants />} />
+      {/* 🔥 NEW PASSWORD RECOVERY ROUTES */}
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
     </Routes>
   );
 }

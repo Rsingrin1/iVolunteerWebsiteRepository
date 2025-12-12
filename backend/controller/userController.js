@@ -98,6 +98,26 @@ export const deleteUser = async (req, res) => {
   }
 };
 
+// Admin-style delete by id (used by dev tooling). No auth enforced here;
+// If you want to restrict this, add `requireAuth` or checks.
+export const deleteUserById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!id) {
+      return res.status(400).json({ message: "User id is required." });
+    }
+    const userExist = await User.findById(id);
+    if (!userExist) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    await User.findByIdAndDelete(id);
+    return res.status(200).json({ message: "User deleted successfully.", id });
+  } catch (error) {
+    console.error("deleteUserById error:", error);
+    return res.status(500).json({ errorMessage: error.message });
+  }
+};
+
 export const login = async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -149,5 +169,103 @@ export const login = async (req, res) => {
   } catch (error) {
     console.error("Login error:", error);
     return res.status(500).json({ message: "Server error during login." });
+  }
+};
+
+export const passwordResetRequest = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required." });
+
+    const user = await User.findOne({ email });
+
+    // Always return success to avoid account enumeration; if user exists, send email
+    if (user) {
+      const token = jwt.sign(
+        { id: user._id.toString() },
+        process.env.JWT_SECRET || "dev_secret_key_change_me",
+        { expiresIn: "1h" }
+      );
+
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+      const resetLink = `${frontendUrl}/reset-password?token=${token}`;
+
+      const { generatePasswordResetEmail } = await import("../emailTemplate.js");
+      const htmlTemplate = generatePasswordResetEmail(user.username || "", resetLink);
+
+      const nodemailer = await import("nodemailer");
+      const transporter = nodemailer.default.createTransport({
+        host: process.env.GMAIL_HOST,
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.GMAIL_USER,
+          pass: process.env.GMAIL_PASS,
+        },
+      });
+
+      const mailOptions = {
+        from: process.env.GMAIL_USER,
+        to: email,
+        subject: "iVolunteer Password Reset",
+        html: htmlTemplate,
+      };
+
+      try {
+        await transporter.sendMail(mailOptions);
+      } catch (err) {
+        console.error("Error sending password reset email:", err);
+        // Do not expose internal errors to client; continue to return generic success
+      }
+    }
+
+    return res
+      .status(200)
+      .json({
+        message:
+          "If an account with that email exists, a password reset link has been sent.",
+      });
+  } catch (error) {
+    console.error("passwordResetRequest error:", error);
+    return res
+      .status(500)
+      .json({ message: "Server error while requesting password reset." });
+  }
+};
+
+export const passwordReset = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword)
+      return res
+        .status(400)
+        .json({ message: "Token and new password are required." });
+
+    let payload;
+    try {
+      payload = jwt.verify(
+        token,
+        process.env.JWT_SECRET || "dev_secret_key_change_me"
+      );
+    } catch (err) {
+      return res.status(400).json({ message: "Invalid or expired token." });
+    }
+
+    const userId = payload.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    const hash = await bcrypt.hash(newPassword, 13);
+    user.hash = hash;
+    await user.save();
+
+    return res
+      .status(200)
+      .json({ message: "Password has been reset successfully." });
+  } catch (error) {
+    console.error("passwordReset error:", error);
+    return res
+      .status(500)
+      .json({ message: "Server error while resetting password." });
   }
 };
