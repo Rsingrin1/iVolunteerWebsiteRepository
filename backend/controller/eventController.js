@@ -3,7 +3,7 @@
 import Events from "../model/eventModel.js";
 import User from "../model/userModel.js";
 import mongoose from "mongoose";
-import { sendEventUpdateEmails, sendEventCancellationEmails } from "../emailHelpers.js";
+import { sendEventUpdateEmails, sendEventCancellationEmails, sendCustomMessageEmails } from "../emailHelpers.js";
 
 // CREATE EVENT
 // POST /api/event
@@ -395,6 +395,36 @@ export const getMyVolunteerEvents = async (req, res) => {
     return res.status(200).json(events || []);
   } catch (error) {
     console.error("getMyVolunteerEvents error:", error);
+    return res.status(500).json({ errorMessage: error.message });
+  }
+};
+
+// ORGANIZER: send a custom notification message to all participants
+// POST /api/event/:id/notify
+export const sendNotification = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const userId = req.user?.id;
+    const { message } = req.body;
+
+    const eventExist = await Events.findById(id);
+    if (!eventExist) return res.status(404).json({ message: "Event not found." });
+
+    if (eventExist.organizer.toString() !== userId.toString()) {
+      return res.status(403).json({ message: "You are not allowed to notify participants for this event." });
+    }
+
+    const participantIds = Array.isArray(eventExist.participants) ? eventExist.participants : [];
+    if (participantIds.length === 0) {
+      return res.status(200).json({ message: "No participants to notify.", sent: 0, total: 0 });
+    }
+
+    const participants = await User.find({ _id: { $in: participantIds } }).select('email username');
+    const result = await sendCustomMessageEmails(eventExist, participants, message || '');
+
+    return res.status(200).json({ message: 'Notifications sent (best-effort).', sent: result.sent, total: result.total });
+  } catch (error) {
+    console.error('sendNotification error:', error && error.message);
     return res.status(500).json({ errorMessage: error.message });
   }
 };

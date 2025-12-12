@@ -20,6 +20,15 @@ import {
   AlertDialogBody,
   AlertDialogFooter,
   useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalCloseButton,
+  Textarea,
+  useToast,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import Profile from "../assets/profileMenu";
@@ -39,6 +48,17 @@ export default function MyEventsOrganizer() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef();
   const [deletingEvent, setDeletingEvent] = useState(null);
+
+  // Send Notification dialog control
+  const {
+    isOpen: notifyIsOpen,
+    onOpen: openNotify,
+    onClose: closeNotify,
+  } = useDisclosure();
+  const [notifyEvent, setNotifyEvent] = useState(null);
+  const [notifyMessage, setNotifyMessage] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const toast = useToast();
 
   const organizerId =
     localStorage.getItem("organizerId") ||
@@ -365,6 +385,11 @@ export default function MyEventsOrganizer() {
                           py={3}
                           h="auto"
                           _hover={{ bg: "#181c71", opacity: 0.9 }}
+                          onClick={() => {
+                            setNotifyEvent(event);
+                            setNotifyMessage("");
+                            openNotify();
+                          }}
                         >
                           <Text
                             fontFamily="Inter, Helvetica"
@@ -452,6 +477,72 @@ export default function MyEventsOrganizer() {
           </AlertDialogContent>
         </AlertDialogOverlay>
       </AlertDialog>
+
+      {/* Send Notification modal */}
+      <Modal isOpen={notifyIsOpen} onClose={() => { setNotifyEvent(null); closeNotify(); }}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Send Notification</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text mb={3} color="gray.700">
+              Send an email update to all registered participants. Keep in mind that email notifications for change in date, time, location, or cancellation are automatically sent by iVolunteer.
+            </Text>
+            <Text mb={2} fontWeight={600}>Your message:</Text>
+            <Textarea
+              value={notifyMessage}
+              onChange={(e) => setNotifyMessage(e.target.value)}
+              placeholder={`Write a short message to all participants of "${notifyEvent?.name || ''}"...`}
+              rows={6}
+            />
+          </ModalBody>
+
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={() => { setNotifyEvent(null); closeNotify(); }}>
+              Cancel
+            </Button>
+            <Button
+              bg="#181c71"
+              color="white"
+              onClick={async () => {
+                if (!notifyEvent) return;
+                setIsSending(true);
+                try {
+                  const res = await fetch(`${API_BASE}/api/event/${notifyEvent._id}/notify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ message: notifyMessage }),
+                  });
+
+                  let data = null;
+                  const ct = res.headers.get('content-type') || '';
+                  if (ct.includes('application/json')) {
+                    try { data = await res.json(); } catch (e) { data = null; }
+                  }
+
+                  if (!res.ok) {
+                    toast({ title: 'Failed to send notifications', description: (data && (data.message || data.errorMessage)) || `Status ${res.status}`, status: 'error', duration: 6000, isClosable: true });
+                  } else {
+                    const sent = (data && (data.sent ?? null));
+                    const total = (data && (data.total ?? null));
+                    const desc = sent != null && total != null ? `${sent} of ${total} notifications sent.` : 'Notifications sent (best-effort).';
+                    toast({ title: 'Notifications sent', description: desc, status: 'success', duration: 6000, isClosable: true });
+                    setNotifyEvent(null);
+                    closeNotify();
+                  }
+                } catch (err) {
+                  toast({ title: 'Network error', description: err.message || 'Failed to send notifications', status: 'error', duration: 6000, isClosable: true });
+                } finally {
+                  setIsSending(false);
+                }
+              }}
+            >
+              {isSending ? 'Sending...' : 'Send'}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
       <style>
         {`

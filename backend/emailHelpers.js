@@ -94,3 +94,35 @@ export const sendEventCancellationEmails = async (event, participantUsers = []) 
   const sent = results.filter(Boolean).length;
   return { sent, total: participantUsers.length };
 };
+
+export const sendCustomMessageEmails = async (event, participantUsers = [], message = '') => {
+  if (!participantUsers || participantUsers.length === 0) return { sent: 0, total: 0 };
+
+  const transporter = createTransporter();
+  const subject = `Important Update: ${event.name}`;
+  const text = message || `Important update regarding ${event.name}.`;
+  const html = `
+    <div style="font-family: Arial, Helvetica, sans-serif; color: #111;">
+      <p>${message ? message.replace(/\n/g, '<br/>') : `Important update regarding <strong>${event.name}</strong>.`}</p>
+    </div>
+  `;
+
+  const sendPromises = participantUsers.map((u) => {
+    if (!u || !u.email) return Promise.resolve(null);
+    const mailOptions = {
+      from: `iVolunteer <${process.env.GMAIL_USER}>`,
+      to: u.email,
+      subject,
+      text,
+      html,
+    };
+    return transporter.sendMail(mailOptions).catch((err) => {
+      console.error('Error sending custom email to', u.email, err && err.message);
+      return null;
+    });
+  });
+
+  const results = await Promise.all(sendPromises);
+  const sent = results.filter(Boolean).length;
+  return { sent, total: participantUsers.length };
+};

@@ -7,6 +7,7 @@ import {
   getEventsByOrganizer,
   updateEvent,
   deleteEvent,
+  sendNotification,
   applyToEvent,
   getMyVolunteerEvents,
   cancelApplicationOrParticipation,
@@ -47,6 +48,9 @@ route.get(
 route.post("/event", requireAuth, requireOrganizer, createEvent);
 route.put("/update/event/:id", requireAuth, requireOrganizer, updateEvent);
 route.delete("/delete/event/:id", requireAuth, requireOrganizer, deleteEvent);
+
+// Organizer: send custom notification to participants
+route.post("/event/:id/notify", requireAuth, requireOrganizer, sendNotification);
 
 // Volunteer (or organizer acting as volunteer) applies to an event
 route.post(
